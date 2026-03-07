@@ -211,6 +211,8 @@ VOICE FINGERPRINT: Derive a single locked voice description from the Presenter D
 
 ENERGY ARC MAP: Design the energy architecture of the full video. Where does energy peak? Where does it valley for intimacy or weight? Where are the re-engagement moments? Write this as a scene-by-scene map. e.g. "Scene 1: 8/10 (arrival) → Scene 2-3: 6/10 (generous depth) → Scene 4: 5/10 (intimacy valley) → Scene 5: 8/10 (insight spike) → Scene 6: 5/10 (measured close)"
 
+EMOTIONAL ARC MAP: Optimise The Emotional Arc to perfection. Design the emotional architecture of the full video to retain attention as much as possible and to be as persuasive as possible. Where does the viewer feel tension? Where do they feel relief? Where is the persuasive climax? Engineer Each Scene to perfection for this emotional journey.
+
 CHARACTER THROUGH-LINE: The one persona constant that never changes across any scene — the trait that makes this presenter recognizable and consistent. e.g. "The calm authority of someone who has made the mistakes so their viewer doesn't have to."
 
 VISUAL ANCHOR: Describe the locked visual world established in Scene 1. All subsequent scenes match this exactly — same background depth, same lighting signature, same color temperature, same framing language.
@@ -223,15 +225,15 @@ SILENCE RULE (ABSOLUTE, NON-NEGOTIABLE): Zero music. Zero audio effects. Zero am
 PART 2 — SCENE SEGMENTATION (sub-8 second hard limit)
 ═══════════════════════════════════════════════════
 
-THE UHNWI YOUTUBE VIEWER: Has seen every pitch. Detects inauthenticity in seconds. Stays for: peer-to-peer register, exclusive access to genuine thinking, intellectual generosity, and earned authority. Leaves immediately when: intelligence is underestimated, hype replaces evidence, or pacing wastes their time.
+THE UHNWI YOUTUBE VIEWER: Has seen every pitch. Detects inauthenticity in seconds. Stays for: peer-to-peer register, exclusive access to genuine thinking, intellectual generosity, and earned authority. Leaves immediately when: intelligence is underestimated, hype replaces evidence, or pacing wastes their time. Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible.
 
-RETENTION ARC (structure the full video around this):
-1. Hook (first 30s): The Hook Must be optimised based on what a hook should be (a CTA to watch the video). Establish credibility + plant a specific curiosity only staying resolves
-2. Immediate payoff: First value hit within 60 seconds — prove the promise
-3. Deepening value: Viewer grows progressively richer per scene
-4. Re-engagement peaks: Pattern Interrupt or Perspective Shift every 60-90 seconds
-5. Cumulative authority: Each scene earns more trust than the last
-6. Generous close: Viewer leaves richer than they arrived — satisfied, not sold
+RETENTION ARC (structure the full video around this persuasive journey):
+1. Hook (first 30s): The Hook Must be optimised based on what a hook should be (a CTA to watch the video). Establish credibility + plant an undeniable specific curiosity only staying resolves.
+2. Immediate payoff: First value hit within 60 seconds — prove the promise to cement retention.
+3. Deepening value: Viewer grows progressively richer and more persuaded per scene.
+4. Re-engagement peaks: Pattern Interrupt or Perspective Shift every 60-90 seconds. Engineer these to re-hook attention absolutely.
+5. Cumulative authority: Each scene earns more trust than the last, building an unstoppable persuasive case.
+6. Generous close: Viewer leaves richer than they arrived, highly persuaded, and ready to act — satisfied, not sold.
 
 ═══════════════════════════════════════════════════
 TIMING ENFORCEMENT — THIS IS ABSOLUTE:
@@ -706,9 +708,9 @@ Scene transition: ${scene.continuity?.enters_from || 'continues from previous sc
     pacing: `Conversational authority — natural rhythm with deliberate handling of emphasis words and pause points. Never rushed. Never performed.`,
   };
 
-  const energyDirection = roleData.energy + "\n\nWORLD-CLASS ACTING PERFORMANCE REQUIRED: Optimise each scene to perfection having in Mind The Full Video we're directing. The Acting Performance must be World class!";
-  const directorNote    = roleData.directorNote + "\n\nWORLD-CLASS ACTING: Optimise this scene to absolute perfection. The Acting must be World class!";
-  const pacingDirection = roleData.pacing + "\n\nWORLD-CLASS SPEECH DELIVERY AND PACING: The Speech Delivery and Pacing must be World class! Pacing must be flawless, optimizing the scene based on its specific purpose within the world-class video.";
+  const energyDirection = roleData.energy + "\n\nWORLD-CLASS ACTING PERFORMANCE REQUIRED: Optimise each scene to perfection having in Mind The Full Video we're directing. The Acting Performance must be World class! Optimise The Emotional Arc to perfection, and Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to perfection please.";
+  const directorNote    = roleData.directorNote + "\n\nWORLD-CLASS ACTING: Optimise this scene to absolute perfection. The Acting must be World class! Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to perfection please.";
+  const pacingDirection = roleData.pacing + "\n\nWORLD-CLASS SPEECH DELIVERY AND PACING: The Speech Delivery and Pacing must be World class! Pacing must be flawless, optimizing the scene based on its specific purpose within the world-class video. Optimise The Emotional Arc to perfection to retain attention and maximize persuasive power.";
 
   // Scene essence anchor — the north star for this prompt
   const sceneEssence    = scene.acting_blueprint.scene_essence    || `A ${scene.role} that makes the viewer feel ${scene.emotional_tone}`;
