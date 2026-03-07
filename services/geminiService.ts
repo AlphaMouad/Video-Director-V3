@@ -33,9 +33,9 @@ export const analyzeReferenceVideo = async (videoFile: File): Promise<ReferenceA
   const base64Data = await fileToBase64(videoFile);
 
   const prompt = `
-You are a world-class Performance Analyst, Behavioral Scientist, and YouTube Presenter Intelligence Engine.
+You are a world-class Hollywood Director, Performance Analyst, Behavioral Scientist, and YouTube Presenter Intelligence Engine.
 
-This video will be used to extract the complete performance DNA of this presenter — the invisible architecture that makes them compelling, authoritative, and worth watching on YouTube. The output will power AI-generated video presentations targeting ultra-high-net-worth investors and family office principals.
+This video will be used to extract the complete performance DNA of this presenter — the invisible architecture that makes them compelling, authoritative, and worth watching on YouTube for High-Converting Video Sales Letters (VSLs) and pitching deals to wealthy investors. The output will power AI-generated video presentations targeting ultra-high-net-worth investors and family office principals, demanding World Class Acting, Speech Delivery, Pacing, and Acting Performance.
 
 Your analysis must go beyond what they DO. Understand WHY it works, and specifically WHY it works for a sophisticated, time-scarce, skepticism-high audience.
 
@@ -194,12 +194,12 @@ export const segmentScript = async (
   const MAX_SECONDS = 8.0;
 
   const prompt = `
-You are a world-class YouTube director, performance architect, and script editor.
-You are building an elite thought-leadership video for UHNWI investors — family office principals, private equity professionals, and sophisticated capital allocators.
+You are a world-class Hollywood Director, YouTube director, performance architect, and script editor.
+You are building an elite thought-leadership video, Video Sales Letter (VSL), and deal pitch for UHNWI investors — family office principals, private equity professionals, and sophisticated capital allocators.
 
 YOUR TWO JOBS:
-1. Generate a MASTER DIRECTING VISION for the full video (voice lock, energy arc, character through-line)
-2. Segment the script into precisely-timed VEO 3.1 scenes with elite acting blueprints
+1. Generate a MASTER DIRECTING VISION for the full video (voice lock, energy arc, character through-line). You must optimise every scene to absolute perfection having in mind the Full Video we're directing.
+2. Segment the script into precisely-timed VEO 3.1 scenes with elite acting blueprints, demanding World Class Acting, Speech Delivery, and Pacing.
 
 ═══════════════════════════════════════════════════
 PART 1 — MASTER DIRECTING VISION (generated once, governs all scenes)
@@ -226,7 +226,7 @@ PART 2 — SCENE SEGMENTATION (sub-8 second hard limit)
 THE UHNWI YOUTUBE VIEWER: Has seen every pitch. Detects inauthenticity in seconds. Stays for: peer-to-peer register, exclusive access to genuine thinking, intellectual generosity, and earned authority. Leaves immediately when: intelligence is underestimated, hype replaces evidence, or pacing wastes their time.
 
 RETENTION ARC (structure the full video around this):
-1. Hook (first 30s): Establish credibility + plant a specific curiosity only staying resolves
+1. Hook (first 30s): The Hook Must be optimised based on what a hook should be (a CTA to watch the video). Establish credibility + plant a specific curiosity only staying resolves
 2. Immediate payoff: First value hit within 60 seconds — prove the promise
 3. Deepening value: Viewer grows progressively richer per scene
 4. Re-engagement peaks: Pattern Interrupt or Perspective Shift every 60-90 seconds
@@ -706,9 +706,9 @@ Scene transition: ${scene.continuity?.enters_from || 'continues from previous sc
     pacing: `Conversational authority — natural rhythm with deliberate handling of emphasis words and pause points. Never rushed. Never performed.`,
   };
 
-  const energyDirection = roleData.energy;
-  const directorNote    = roleData.directorNote;
-  const pacingDirection = roleData.pacing;
+  const energyDirection = roleData.energy + "\n\nWORLD-CLASS ACTING PERFORMANCE REQUIRED: Optimise each scene to perfection having in Mind The Full Video we're directing. The Acting Performance must be World class!";
+  const directorNote    = roleData.directorNote + "\n\nWORLD-CLASS ACTING: Optimise this scene to absolute perfection. The Acting must be World class!";
+  const pacingDirection = roleData.pacing + "\n\nWORLD-CLASS SPEECH DELIVERY AND PACING: The Speech Delivery and Pacing must be World class! Pacing must be flawless, optimizing the scene based on its specific purpose within the world-class video.";
 
   // Scene essence anchor — the north star for this prompt
   const sceneEssence    = scene.acting_blueprint.scene_essence    || `A ${scene.role} that makes the viewer feel ${scene.emotional_tone}`;
