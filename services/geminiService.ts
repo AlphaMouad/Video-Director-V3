@@ -451,18 +451,18 @@ export const extractFrameFromVideo = (videoFile: File, timestamp: string): Promi
 // Silent fallback to character's own photo if model unavailable.
 // ============================================================
 export const generateCharacterFrame = async (
-  referenceFrame:        Blob,
+  scenePrompt:           string,
   targetCharacterImages: File[],
   role:                  string,
-  emotion:               string
-): Promise<{ blob: Blob; enhanced: boolean }> => {
+  emotion:               string,
+  frameType:             'in-frame' | 'out-frame'
+): Promise<{ blob: Blob | null; enhanced: boolean }> => {
 
-  if (targetCharacterImages.length === 0) return { blob: referenceFrame, enhanced: false };
+  if (targetCharacterImages.length === 0) return { blob: null, enhanced: false };
 
   const charBase64s = await Promise.all(
     targetCharacterImages.slice(0, 5).map(img => fileToBase64(img))
   );
-  const refBase64 = await fileToBase64(referenceFrame);
 
   const charCount = charBase64s.length;
   const charLabel = charCount === 1
@@ -470,29 +470,31 @@ export const generateCharacterFrame = async (
     : `Images 1 through ${charCount} are THE CHARACTER — ${charCount} photos of the same person. Cross-reference all of them for maximum identity, wardrobe, and environment accuracy.`;
 
   const prompt = `
-TASK: Pose and expression adjustment. Everything else stays identical.
+TASK: Generate a hyper-realistic ${frameType} photograph for a video scene.
 
 ${charLabel}
-Image ${charCount + 1} is the POSE REFERENCE — study only the body angle, head tilt, and expression intensity. The person and background in this image are completely irrelevant.
+The following is the Director's Scene Prompt detailing the emotional core, energy, and exact visual context of this scene:
+"""
+${scenePrompt}
+"""
 
 WHAT YOU ARE DOING:
-Take the person from Images 1–${charCount} and render them in a slightly adjusted pose and expression that fits the scene. Think of it as a photographer saying: "Good — now shift slightly and give me ${emotion}." Same person. Same place. Same clothes. Same light. Just a different moment.
+Take the person from Images 1–${charCount} and render them in a hyper-realistic photograph that perfectly captures the essence, pose, and expression required for the ${frameType} of this scene. The emotion is: "${emotion}" and the role is "${role}".
 
 ABSOLUTE RULES:
-1. IDENTITY: The face must be 100% the person from Images 1–${charCount}. Every feature — bone structure, skin tone, eyes, nose, lips, hair, any marks or asymmetries — preserved exactly. Zero blending with the pose reference person.
-2. BACKGROUND & SETTING: Must be identical to what appears in the character's photos. Same room, same environment, same lighting direction and color temperature. Do not use the pose reference background.
+1. IDENTITY: The face must be 100% the person from Images 1–${charCount}. Every feature — bone structure, skin tone, eyes, nose, lips, hair, any marks or asymmetries — preserved exactly.
+2. BACKGROUND & SETTING: Must be identical to what appears in the character's photos. Same room, same environment, same lighting direction and color temperature.
 3. WARDROBE: Identical clothing from the character's photos. Same garments, same colors, same fit.
-4. POSE & EXPRESSION ONLY: Adjust the body posture and head angle toward the geometry shown in Image ${charCount + 1}. Adjust the expression to convey: ${emotion} for a ${role} performance. Changes should feel natural — as if captured in the next frame of a photoshoot.
-5. PHOTOREALISM: Indistinguishable from a real photograph. Visible skin pores. Natural subsurface scattering. Authentic catchlights matching the character's environment. Individual hair strands. No smoothing. No CGI sheen. No artifacts.
+4. SCENE CONTEXT: The expression, posture, energy, and feeling must perfectly match the Director's Scene Prompt provided above. Optimize the image generation to perfection based on the scene.
+5. HYPER-REALISM: Indistinguishable from a real photograph. Visible skin pores. Natural subsurface scattering. Authentic catchlights matching the character's environment. Individual hair strands. No smoothing. No CGI sheen. No artifacts.
 
-OUTPUT: One single photorealistic photograph. Nothing else.
+OUTPUT: One single hyper-realistic photograph. Nothing else.
 `;
 
   const parts: any[] = [
     ...charBase64s.map((b64, i) => ({
       inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
     })),
-    { inlineData: { data: refBase64, mimeType: 'image/jpeg' } },
     { text: prompt }
   ];
 
@@ -537,14 +539,10 @@ const extractImageFromResponse = (response: any): Blob | null => {
 export const engineerScenePrompt = async (
   scene:                 ScriptScene,
   referenceAnalysis:     ReferenceAnalysis,
-  inframeImage:          File,
-  outframeImage:         File,
   targetCharacterImages: File[],
   completedScenes:       EngineeredScene[]
 ): Promise<string> => {
 
-  const inframeB64  = await fileToBase64(inframeImage);
-  const outframeB64 = await fileToBase64(outframeImage);
   const charBase64s = await Promise.all(
     targetCharacterImages.slice(0, 5).map(img => fileToBase64(img))
   );
@@ -552,8 +550,8 @@ export const engineerScenePrompt = async (
   const charCount      = charBase64s.length;
   const isAnchorScene  = completedScenes.length === 0;
   const charImageLabel = charCount === 1
-    ? 'Image 3 is the TARGET CHARACTER — the person who must appear in this video.'
-    : `Images 3 through ${charCount + 2} are the TARGET CHARACTER — ${charCount} photos of the same person for maximum identity accuracy.`;
+    ? 'Image 1 is the TARGET CHARACTER — the person who must appear in this video.'
+    : `Images 1 through ${charCount} are the TARGET CHARACTER — ${charCount} photos of the same person for maximum identity accuracy.`;
 
   // Voice fingerprint — derived from reference analysis DNA (locked for whole video)
   const voiceFingerprint = [
@@ -752,11 +750,9 @@ VEO responds to emotional truth, not checklists. One vivid note from a great dir
 ══════════════════════════════════════════════════════════════
 IMAGES (study before writing):
 ══════════════════════════════════════════════════════════════
-Image 1 — OPENING FRAME: Posing geometry, framing, environment at scene start.
-Image 2 — CLOSING FRAME: Posing geometry, expression shift, final framing.
 ${charImageLabel}
 
-IMAGE AUTHORITY: The TARGET CHARACTER images define EVERYTHING about who appears in this video — face, identity, wardrobe, environment, and lighting. They are absolute truth. Images 1 and 2 provide posing geometry and camera language only — never identity or setting.
+IMAGE AUTHORITY: The TARGET CHARACTER images define EVERYTHING about who appears in this video — face, identity, wardrobe, environment, and lighting. They are absolute truth. Derive the opening and closing posture geometry entirely from the emotional core and energy arc of the scene, utilizing the character's natural baseline.
 
 ══════════════════════════════════════════════════════════════
 SCENE: #${scene.scene_number} — "${scene.title}"
@@ -819,7 +815,7 @@ Character:
 
 Shot:
 
-[Open from Image 1: describe the framing, the camera-to-subject distance, where this person sits in the frame and how much space they command. Then describe how the camera behaves across the ${scene.duration_seconds} seconds: does it hold absolutely still, letting their stillness build authority? Does it make a barely perceptible push toward them as the key word arrives — closing distance by inches, not feet? Close on Image 2's framing. This camera has a perspective — it is not a recording device. It is moved by what it witnesses. Give it a point of view.]
+[Describe the framing, the camera-to-subject distance, where this person sits in the frame and how much space they command at the start of the scene. Then describe how the camera behaves across the ${scene.duration_seconds} seconds: does it hold absolutely still, letting their stillness build authority? Does it make a barely perceptible push toward them as the key word arrives — closing distance by inches, not feet? Describe the final framing. This camera has a perspective — it is not a recording device. It is moved by what it witnesses. Give it a point of view.]
 
 ---
 
@@ -876,8 +872,6 @@ Write now. Five sections. Each one a single dominant signal, written as flowing 
 
   const parts: any[] = [
     { text: prompt },
-    { inlineData: { mimeType: inframeImage.type  || 'image/jpeg', data: inframeB64  } },
-    { inlineData: { mimeType: outframeImage.type || 'image/jpeg', data: outframeB64 } },
     ...charBase64s.map((b64, i) => ({
       inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
     }))
