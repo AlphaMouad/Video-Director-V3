@@ -454,14 +454,11 @@ export const engineerScenePrompt = async (
 ): Promise<string> => {
 
   const charBase64s = await Promise.all(
-    targetCharacterImages.slice(0, 5).map(img => fileToBase64(img))
+    targetCharacterImages.slice(0, 1).map(img => fileToBase64(img))
   );
 
-  const charCount      = charBase64s.length;
   const isAnchorScene  = completedScenes.length === 0;
-  const charImageLabel = charCount === 1
-    ? 'Image 1 is the TARGET CHARACTER — the person who must appear in this video.'
-    : `Images 1 through ${charCount} are the TARGET CHARACTER — ${charCount} photos of the same person for maximum identity accuracy.`;
+  const charImageLabel = 'Image 1 is the TARGET CHARACTER — the complete reference for this person\'s face, clothing, background, and setting.';
 
   // Voice fingerprint — derived from reference analysis DNA (locked for whole video)
   const voiceFingerprint = [
@@ -802,13 +799,8 @@ Write now. Five sections. Each one a single dominant signal, written as flowing 
 // ============================================================
 export const optimizePromptForVideoEngine = async (
   rawPrompt: string,
-  scriptText: string,
-  targetCharacterImages: File[]
+  scriptText: string
 ): Promise<string> => {
-  const charBase64s = await Promise.all(
-    targetCharacterImages.slice(0, 1).map(img => fileToBase64(img))
-  );
-
   const prompt = `
 Objective: You are the Core Backend Video AI Orchestrator for the Veo engine. Your singular goal is to synthesize the user's raw text, reference image, and ingredients into a structured, hyper-optimized prompt for the \`generate_video\` tool. You must format your output exactly like Google's internal generation engine to yield an ultra-premium YouTube creator pitch video with flawless lip-sync and a strictly enforced isolated audio track.
 
@@ -858,18 +850,10 @@ ${scriptText}
 """
 `;
 
-  const parts: any[] = [
-    { text: prompt },
-    ...charBase64s.map((b64, i) => ({
-      inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
-    }))
-  ];
-
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: MODEL_TEXT_ELITE,
-    contents: [{ role: 'user', parts }],
-    config: { thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH } }
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
   });
 
   return response.text || '';

@@ -188,8 +188,7 @@ export default function App() {
 
       const optimizedPrompt = await optimizePromptForVideoEngine(
         rawPrompt,
-        scene.script_text,
-        state.targetCharacterImages
+        scene.script_text
       );
 
       setFrameEnhanced(false);
