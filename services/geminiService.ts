@@ -912,25 +912,29 @@ CRITICAL DIRECTIVES FOR YOUR SYNTHESIZED VIDEO PROMPT:
 
 4. THE IRONCLAD AUDIO WALL: The model WILL hallucinate music unless constrained physically. Use the exact ALL CAPS block provided below for the [Audio Style] section.
 
+5. ABSOLUTE FORMATTING RULE: You must return ONLY the raw text for the four bracketed sections. NO markdown code blocks. NO preamble ("Here is the prompt:"). NO postamble. DO NOT attempt to call tools or functions. Output the synthesized text immediately.
+
+6. WORLD-CLASS PERSUASIVE PUNCH: The acting and performance directives must radiate sovereign certainty. The presenter is pitching multi-million dollar deals to UHNWI investors. Inject powerful psychological triggers, peer-to-peer authority, and undeniable conviction into the [Action & Performance] section. Ensure the voice is locked to a NATIVE US ENGLISH ACCENT.
+
 Output Format Requirements:
 Synthesize the final prompt to the video generation tool EXACTLY in this format (do not use bullet points, just the exact bracketed headers followed by the distilled text):
 
 [Visuals]
-Cinematic, ultra-premium podcast/creator studio aesthetic. High-end dark textured background with subtle vertical LED accent lighting. Professional broadcast microphone clearly visible in the foreground. Shot on 85mm lens with shallow depth of field (f/1.4). STRICTLY LOCKED-OFF CAMERA. Zero panning, zero erratic movement. Authentic skin textures, highly photorealistic sub-surface scattering, and specular catchlights in the corneas.
+Cinematic, ultra-premium UHNWI briefing room aesthetic. High-end dark textured background with subtle vertical LED accent lighting. Shot on 85mm lens with shallow depth of field (f/1.4). STRICTLY LOCKED-OFF CAMERA. Zero panning, zero erratic movement. Authentic skin textures, highly photorealistic sub-surface scattering, and specular catchlights in the corneas.
 
 [Action & Performance]
-High-converting VSL presenter performance optimized for maximum psychological retention. Confident expression paired with a single precise hand gesture with an open palm. Calculated conversational pacing utilizing intentional micro-pauses for pattern interruption. Highly active brow elevation synced to the rhythmic stress of key metrics. Unwavering direct-to-lens eye contact. The actor naturally parts their lips and takes a visible, deep diaphragmatic breath before speaking.
+High-converting elite VSL presenter performance optimized for maximum psychological retention and absolute persuasive power. The performance radiates sovereign certainty and peer-level respect for wealthy investors. Confident, piercing expression paired with a single precise, authoritative hand gesture (e.g., steepled fingers or an open palm of generosity) to emphasize the core point. Calculated conversational pacing utilizing intentional micro-pauses for pattern interruption and tension building. Highly active brow elevation synced to the rhythmic stress of key metrics. Unwavering direct-to-lens eye contact. The actor is utterly convinced of their own script.
 
 [Script]
 Frame-accurate phonetic lip-sync mapping mapped to a strict 145-155 WPM (Words Per Minute) VSL cadence. The subject confidently speaks the following explicit line directly to the camera: "[INSERT THE EXACT SPOKEN SCRIPT/DIALOGUE FROM THE USER INPUT HERE]". Flawless physical articulation of bilabial plosives and labiodental fricatives, stretching the vowels on impact words for dramatic emphasis.
 
 [Audio Style]
-AUTHORITATIVE, HIGH-RETENTION VSL VOCAL DELIVERY. PRECISE 150 WPM CADENCE. DYNAMIC PITCH VARIATION WITH HARD EMPHASIS ON CORE VALUE PROPOSITIONS AND STRATEGIC 1.5-SECOND SILENT BEATS BEFORE KEY HOOKS. COMPLETELY DEAD ACOUSTIC ROOM. STUDIO-ISOLATED DRY VOCAL RECORDING. STRICT NEGATIVE AUDIO OVERRIDE: ABSOLUTELY NO BACKGROUND MUSIC. NO YOUTUBE INTRO MUSIC. NO CINEMATIC SCORE. NO CORPORATE TRACKS. NO AMBIENT NOISE. NO SOUND EFFECTS. NO FOLEY. THE BACKGROUND MUST BE 100% DEAD SILENT. GENERATE ONLY THE CRISP, ISOLATED HUMAN VOICE DELIVERING THE EXACT SCRIPT PROVIDED.
+AUTHORITATIVE, HIGH-RETENTION VSL VOCAL DELIVERY. AUTHENTIC NATIVE US ENGLISH ACCENT. PRECISE 150 WPM CADENCE. DYNAMIC PITCH VARIATION WITH HARD EMPHASIS ON CORE VALUE PROPOSITIONS AND STRATEGIC 1.5-SECOND SILENT BEATS BEFORE KEY HOOKS. COMPLETELY DEAD ACOUSTIC ROOM. STUDIO-ISOLATED DRY VOCAL RECORDING. STRICT NEGATIVE AUDIO OVERRIDE: ABSOLUTELY NO BACKGROUND MUSIC. NO YOUTUBE INTRO MUSIC. NO CINEMATIC SCORE. NO CORPORATE TRACKS. NO AMBIENT NOISE. NO SOUND EFFECTS. NO FOLEY. THE BACKGROUND MUST BE 100% DEAD SILENT. GENERATE ONLY THE CRISP, ISOLATED HUMAN VOICE DELIVERING THE EXACT SCRIPT PROVIDED.
 
 Execution Logic:
 1. Synthesize the user's text and ingredients into the 4 exact bracketed sections above. Fill in the [INSERT...] placeholder with the actual exact dialogue requested by the user.
-2. Call the \`generate_video\` tool. If the user provides a Reference Image, you MUST pass it into the tool as the visual baseline alongside your structured text prompt.
-3. After generation is successfully triggered, call \`system_objective_fulfilled\`.
+2. Elevate the persuasive punch of the performance directions to match an elite UHNWI deal pitch.
+3. OUTPUT ONLY THE FOUR SECTIONS. NO OTHER TEXT.
 
 User Input / Context:
 User Text Prompt & Ingredients:
