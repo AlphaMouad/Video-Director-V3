@@ -752,7 +752,7 @@ IMAGES (study before writing):
 ══════════════════════════════════════════════════════════════
 ${charImageLabel}
 
-IMAGE AUTHORITY: The TARGET CHARACTER images define EVERYTHING about who appears in this video — face, identity, wardrobe, environment, and lighting. They are absolute truth. Derive the opening and closing posture geometry entirely from the emotional core and energy arc of the scene, utilizing the character's natural baseline.
+IMAGE AUTHORITY: The TARGET CHARACTER images define EVERYTHING about who appears in this video — face, identity, wardrobe, environment, and lighting. They are absolute truth. You MUST stick strictly to these character frames without hallucinating or altering the background, lighting, or wardrobe. Derive the opening and closing posture geometry entirely from the emotional core and energy arc of the scene, utilizing the character's natural baseline.
 
 ══════════════════════════════════════════════════════════════
 SCENE: #${scene.scene_number} — "${scene.title}"
@@ -831,7 +831,7 @@ The face: before the first word, the face already holds the full weight of what 
 
 Voice:
 
-[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. Natural Standard American English, warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer.
+[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. MUST BE AN AUTHENTIC NATIVE US ENGLISH ACCENT. This is absolute. Warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer.
 
 ${pacingDirection}
 
