@@ -5,6 +5,7 @@ import {
   extractFrameFromVideo,
   engineerScenePrompt,
   generateCharacterFrame,
+  optimizePromptForVideoEngine,
   setApiKey
 } from './services/geminiService';
 import { AppState, EngineeredScene, ScriptScene } from './types';
@@ -179,22 +180,30 @@ export default function App() {
     try {
       setState(s => ({ ...s, sceneProcessing: 'engineering', sceneProcessingStatus: 'High thinking mode — crafting your elite VEO 3.1 prompt...', error: null }));
 
-      const prompt = await engineerScenePrompt(
+      const rawPrompt = await engineerScenePrompt(
         scene, state.referenceAnalysis,
         state.targetCharacterImages, state.completedScenes
+      );
+
+      setState(s => ({ ...s, sceneProcessingStatus: 'Optimizing VEO 3.1 prompt into Google Internal Engine Format (strict Audio/Lip-Sync constraints)...' }));
+
+      const optimizedPrompt = await optimizePromptForVideoEngine(
+        rawPrompt,
+        scene.script_text,
+        state.targetCharacterImages
       );
 
       let finalInframe = state.inframeImage;
       let finalOutframe = state.outframeImage;
       let isEnhanced = false;
 
-      if (state.targetCharacterImages.length > 0 && prompt) {
-        setState(s => ({ ...s, sceneProcessingStatus: 'Generating hyper-realistic scene frames from prompt context...' }));
+      if (state.targetCharacterImages.length > 0 && optimizedPrompt) {
+        setState(s => ({ ...s, sceneProcessingStatus: 'Generating hyper-realistic scene frames from optimized prompt context...' }));
         setFrameStatus('enhancing');
         try {
           const [rIn, rOut] = await Promise.all([
-            generateCharacterFrame(prompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'in-frame'),
-            generateCharacterFrame(prompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'out-frame')
+            generateCharacterFrame(optimizedPrompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'in-frame'),
+            generateCharacterFrame(optimizedPrompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'out-frame')
           ]);
 
           if (rIn.blob) {
@@ -216,7 +225,7 @@ export default function App() {
       const engineered: EngineeredScene = {
         scene_number: scene.scene_number, scene_title: scene.title,
         role: scene.role, duration_seconds: scene.duration_seconds,
-        veo_prompt: prompt, timestamp: new Date().toISOString(),
+        veo_prompt: optimizedPrompt, timestamp: new Date().toISOString(),
         inframe_source: state.useCustomInframe ? 'custom' : 'auto',
         outframe_source: state.useCustomOutframe ? 'custom' : 'auto'
       };
@@ -225,7 +234,7 @@ export default function App() {
         ...s,
         inframeImage: finalInframe,
         outframeImage: finalOutframe,
-        sceneProcessing: 'complete', currentPrompt: prompt,
+        sceneProcessing: 'complete', currentPrompt: optimizedPrompt,
         completedScenes: [...s.completedScenes.filter(c => c.scene_number !== scene.scene_number), engineered]
       }));
     } catch (err) { handleError(err); }

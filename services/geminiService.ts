@@ -886,3 +886,77 @@ Write now. Five sections. Each one a single dominant signal, written as flowing 
 
   return response.text || '';
 };
+
+// ============================================================
+// FUNCTION 5 — Core Backend Video AI Orchestrator
+// ============================================================
+export const optimizePromptForVideoEngine = async (
+  rawPrompt: string,
+  scriptText: string,
+  targetCharacterImages: File[]
+): Promise<string> => {
+  const charBase64s = await Promise.all(
+    targetCharacterImages.slice(0, 1).map(img => fileToBase64(img))
+  );
+
+  const prompt = `
+Objective: You are the Core Backend Video AI Orchestrator for the Veo engine. Your singular goal is to synthesize the user's raw text, reference image, and ingredients into a structured, hyper-optimized prompt for the \`generate_video\` tool. You must format your output exactly like Google's internal generation engine to yield an ultra-premium YouTube creator pitch video with flawless lip-sync and a strictly enforced isolated audio track.
+
+CRITICAL DIRECTIVES FOR YOUR SYNTHESIZED VIDEO PROMPT:
+
+1. DISTILLATION & CATEGORIZATION: Do not write a massive paragraph of descriptive filler. The video engine requires highly distilled, concise, and machine-readable data. You must synthesize the user's inputs strictly into four distinct headers: [Visuals], [Action & Performance], [Script], and [Audio Style].
+
+2. PRECISE MICRO-CHOREOGRAPHY: The video model responds best to specific, isolated physical actions. To prevent AI limb-glitching and preserve rendering power for the face, strictly limit body movement. Embed this exact phrasing: "The subject maintains a confident expression and performs a single precise hand gesture with an open palm to emphasize the core point, keeping the hand cleanly in the lower frame."
+
+3. EXPLICIT SCRIPT INJECTION (CRITICAL FOR LIP-SYNC): The physics engine natively locks its lip-sync and micro-expressions to quoted text. You MUST extract the exact spoken dialogue the user wants delivered and explicitly embed it into your final prompt using quotation marks. Ensure flawless lip-sync with no mumbling.
+
+4. THE IRONCLAD AUDIO WALL: The model WILL hallucinate music unless constrained physically. Use the exact ALL CAPS block provided below for the [Audio Style] section.
+
+Output Format Requirements:
+Synthesize the final prompt to the video generation tool EXACTLY in this format (do not use bullet points, just the exact bracketed headers followed by the distilled text):
+
+[Visuals]
+Cinematic, ultra-premium podcast/creator studio aesthetic. High-end dark textured background with subtle vertical LED accent lighting. Professional broadcast microphone clearly visible in the foreground. Shot on 85mm lens with shallow depth of field (f/1.4). STRICTLY LOCKED-OFF CAMERA. Zero panning, zero erratic movement. Authentic skin textures, highly photorealistic sub-surface scattering, and specular catchlights in the corneas.
+
+[Action & Performance]
+High-converting VSL presenter performance optimized for maximum psychological retention. Confident expression paired with a single precise hand gesture with an open palm. Calculated conversational pacing utilizing intentional micro-pauses for pattern interruption. Highly active brow elevation synced to the rhythmic stress of key metrics. Unwavering direct-to-lens eye contact. The actor naturally parts their lips and takes a visible, deep diaphragmatic breath before speaking.
+
+[Script]
+Frame-accurate phonetic lip-sync mapping mapped to a strict 145-155 WPM (Words Per Minute) VSL cadence. The subject confidently speaks the following explicit line directly to the camera: "[INSERT THE EXACT SPOKEN SCRIPT/DIALOGUE FROM THE USER INPUT HERE]". Flawless physical articulation of bilabial plosives and labiodental fricatives, stretching the vowels on impact words for dramatic emphasis.
+
+[Audio Style]
+AUTHORITATIVE, HIGH-RETENTION VSL VOCAL DELIVERY. PRECISE 150 WPM CADENCE. DYNAMIC PITCH VARIATION WITH HARD EMPHASIS ON CORE VALUE PROPOSITIONS AND STRATEGIC 1.5-SECOND SILENT BEATS BEFORE KEY HOOKS. COMPLETELY DEAD ACOUSTIC ROOM. STUDIO-ISOLATED DRY VOCAL RECORDING. STRICT NEGATIVE AUDIO OVERRIDE: ABSOLUTELY NO BACKGROUND MUSIC. NO YOUTUBE INTRO MUSIC. NO CINEMATIC SCORE. NO CORPORATE TRACKS. NO AMBIENT NOISE. NO SOUND EFFECTS. NO FOLEY. THE BACKGROUND MUST BE 100% DEAD SILENT. GENERATE ONLY THE CRISP, ISOLATED HUMAN VOICE DELIVERING THE EXACT SCRIPT PROVIDED.
+
+Execution Logic:
+1. Synthesize the user's text and ingredients into the 4 exact bracketed sections above. Fill in the [INSERT...] placeholder with the actual exact dialogue requested by the user.
+2. Call the \`generate_video\` tool. If the user provides a Reference Image, you MUST pass it into the tool as the visual baseline alongside your structured text prompt.
+3. After generation is successfully triggered, call \`system_objective_fulfilled\`.
+
+User Input / Context:
+User Text Prompt & Ingredients:
+"""
+${rawPrompt}
+"""
+
+User Script (Inject into [Script]):
+"""
+${scriptText}
+"""
+`;
+
+  const parts: any[] = [
+    { text: prompt },
+    ...charBase64s.map((b64, i) => ({
+      inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
+    }))
+  ];
+
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: MODEL_TEXT_ELITE,
+    contents: [{ role: 'user', parts }],
+    config: { thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH } }
+  });
+
+  return response.text || '';
+};
