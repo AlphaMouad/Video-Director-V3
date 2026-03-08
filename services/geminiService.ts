@@ -5,7 +5,6 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // MODEL REGISTRY
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
-const MODEL_IMAGE_GEN  = 'gemini-3-pro-image-preview'; // Nano Banana Pro
 
 // ============================================================
 // API Key management
@@ -216,6 +215,8 @@ EMOTIONAL ARC MAP: Optimise The Emotional Arc to perfection. Design the emotiona
 CHARACTER THROUGH-LINE: The one persona constant that never changes across any scene — the trait that makes this presenter recognizable and consistent. e.g. "The calm authority of someone who has made the mistakes so their viewer doesn't have to."
 
 VISUAL ANCHOR: Describe the locked visual world established in Scene 1. All subsequent scenes match this exactly — same background depth, same lighting signature, same color temperature, same framing language.
+
+FULL VIDEO CAMERA CHOREOGRAPHY: Orchestrate the camera movements perfectly across the full video script. Plan how the camera will move across scenes (e.g., slow push-in during tension, tracking shots during transitions, locked-off for authority). The directing must be world-class.
 
 PRESENTATION PERSONA: The specific UHNWI-appropriate archetype this presenter inhabits throughout. e.g. "The world-class private advisor who speaks to principals as peers — never performing, always genuine, treating every viewer's time as precious."
 
@@ -443,97 +444,6 @@ export const extractFrameFromVideo = (videoFile: File, timestamp: string): Promi
   });
 
 // ============================================================
-// FUNCTION 3.5 — Generate Character Frame (Nano Banana Pro)
-//
-// Strategy: Character photos define EVERYTHING (identity, background,
-// setting, clothing, lighting). The reference frame informs pose/expression
-// geometry only — its environment and identity are ignored.
-// Silent fallback to character's own photo if model unavailable.
-// ============================================================
-export const generateCharacterFrame = async (
-  scenePrompt:           string,
-  targetCharacterImages: File[],
-  role:                  string,
-  emotion:               string,
-  frameType:             'in-frame' | 'out-frame'
-): Promise<{ blob: Blob | null; enhanced: boolean }> => {
-
-  if (targetCharacterImages.length === 0) return { blob: null, enhanced: false };
-
-  const charBase64s = await Promise.all(
-    targetCharacterImages.slice(0, 5).map(img => fileToBase64(img))
-  );
-
-  const charCount = charBase64s.length;
-  const charLabel = charCount === 1
-    ? 'Image 1 is THE CHARACTER — the complete reference for this person\'s face, clothing, background, and setting.'
-    : `Images 1 through ${charCount} are THE CHARACTER — ${charCount} photos of the same person. Cross-reference all of them for maximum identity, wardrobe, and environment accuracy.`;
-
-  const prompt = `
-TASK: Generate a hyper-realistic ${frameType} photograph for a video scene.
-
-${charLabel}
-The following is the Director's Scene Prompt detailing the emotional core, energy, and exact visual context of this scene:
-"""
-${scenePrompt}
-"""
-
-WHAT YOU ARE DOING:
-Take the person from Images 1–${charCount} and render them in a hyper-realistic photograph that perfectly captures the essence, pose, and expression required for the ${frameType} of this scene. The emotion is: "${emotion}" and the role is "${role}".
-
-ABSOLUTE RULES:
-1. IDENTITY: The face must be 100% the person from Images 1–${charCount}. Every feature — bone structure, skin tone, eyes, nose, lips, hair, any marks or asymmetries — preserved exactly.
-2. BACKGROUND & SETTING: Must be identical to what appears in the character's photos. Same room, same environment, same lighting direction and color temperature.
-3. WARDROBE: Identical clothing from the character's photos. Same garments, same colors, same fit.
-4. SCENE CONTEXT: The expression, posture, energy, and feeling must perfectly match the Director's Scene Prompt provided above. Optimize the image generation to perfection based on the scene.
-5. HYPER-REALISM: Indistinguishable from a real photograph. Visible skin pores. Natural subsurface scattering. Authentic catchlights matching the character's environment. Individual hair strands. No smoothing. No CGI sheen. No artifacts.
-
-OUTPUT: One single hyper-realistic photograph. Nothing else.
-`;
-
-  const parts: any[] = [
-    ...charBase64s.map((b64, i) => ({
-      inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
-    })),
-    { text: prompt }
-  ];
-
-  const ai = getAI();
-
-  try {
-    const response = await ai.models.generateContent({
-      model: MODEL_IMAGE_GEN,
-      contents: [{ role: 'user', parts }],
-      config: { responseModalities: ['IMAGE', 'TEXT'] }
-    });
-
-    const blob = extractImageFromResponse(response);
-    if (blob) return { blob, enhanced: true };
-  } catch {
-    // Nano Banana Pro unavailable — silent fallback
-  }
-
-  // Fallback: return first uploaded character photo
-  const fallbackB64 = await fileToBase64(targetCharacterImages[0]);
-  const bytes = atob(fallbackB64);
-  const arr   = new Uint8Array(bytes.length);
-  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-  return { blob: new Blob([arr], { type: targetCharacterImages[0].type || 'image/jpeg' }), enhanced: false };
-};
-
-const extractImageFromResponse = (response: any): Blob | null => {
-  for (const part of response.candidates?.[0]?.content?.parts || []) {
-    if (part.inlineData) {
-      const bytes = atob(part.inlineData.data);
-      const arr   = new Uint8Array(bytes.length);
-      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-      return new Blob([arr], { type: 'image/jpeg' });
-    }
-  }
-  return null;
-};
-
-// ============================================================
 // FUNCTION 4 — Engineer Scene Prompt (God-Level VEO 3.1)
 // ============================================================
 export const engineerScenePrompt = async (
@@ -706,9 +616,9 @@ Scene transition: ${scene.continuity?.enters_from || 'continues from previous sc
     pacing: `Conversational authority — natural rhythm with deliberate handling of emphasis words and pause points. Never rushed. Never performed.`,
   };
 
-  const energyDirection = roleData.energy + "\n\nELITE HOLLYWOOD-CALIBER ACTING REQUIRED: Optimise each scene to profound cinematic perfection having in Mind The Full Video we're directing. The Acting Performance must be World class! Inject hyper-detailed, warm, engaging micro-expressions. The character must NOT look angry or tense. Bring EASE to the viewer with relaxed authority and effortless charisma. Optimise The Emotional Arc to perfection, and Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to magnetic perfection please. The Realism must be impeccable. You must stick strictly to the target frames provided.";
-  const directorNote    = roleData.directorNote + "\n\nELITE EMOTIONAL DEPTH: Optimise this scene to absolute cinematic perfection. The Facial Expressions must convey profound depth (e.g., a warm, magnetic micro-smile, relaxed facial muscles, empathetic eye contact). DO NOT make the character look mad or calculating. Give EASE to the viewer and ensure an Elite Viewing Experience. Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to perfection please. The Realism must be impeccable. You must stick strictly to the target frames provided.";
-  const pacingDirection = roleData.pacing + "\n\nWORLD-CLASS SPEECH DELIVERY AND PACING: The Speech Delivery and Pacing must be World class! Pacing must be flawless, optimizing the scene based on its specific purpose within the world-class video. Optimise The Emotional Arc to perfection to retain attention and maximize persuasive power. Ensure Consistent Character Sound (timbre, resonance) while allowing elite emotional variance.";
+  const energyDirection = roleData.energy + "\n\nOSCAR-LEVEL ACTING PERFORMANCE REQUIRED: Optimise each scene to profound cinematic perfection having in Mind The Full Video we're directing. The Acting Performance must be World class! Inject hyper-detailed, warm, engaging micro-expressions. The character must NOT look angry or tense. Bring EASE to the viewer with relaxed authority and effortless charisma. Optimise The Emotional Arc to perfection, and Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to magnetic perfection please. The Realism must be impeccable. You must stick strictly to the target frames provided.";
+  const directorNote    = roleData.directorNote + "\n\nWORLD-CLASS SCENE DIRECTING: Optimise this scene to absolute cinematic perfection. The Facial Expressions must convey profound depth (e.g., a warm, magnetic micro-smile, relaxed facial muscles, empathetic eye contact). DO NOT make the character look mad or calculating. Give EASE to the viewer and ensure an Elite Viewing Experience. Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Orchestrate the camera movements perfectly across the full video script context. Engineer Each Scene to perfection please. The Realism must be impeccable. You must stick strictly to the target frames provided.";
+  const pacingDirection = roleData.pacing + "\n\nELITE SPEECH DELIVERY AND PACING: The Speech Delivery and Pacing must be World class! Pacing must be flawless, optimizing the scene based on its specific purpose within the world-class video. Optimise The Emotional Arc to perfection to retain attention and maximize persuasive power. Ensure Consistent Character Sound (timbre, resonance) while allowing elite emotional variance. You MUST use a Native US English Accent without fail.";
 
   // Scene essence anchor — the north star for this prompt
   const sceneEssence    = scene.acting_blueprint.scene_essence    || `A ${scene.role} that makes the viewer feel ${scene.emotional_tone}`;
@@ -920,10 +830,10 @@ Output Format Requirements:
 Synthesize the final prompt to the video generation tool EXACTLY in this format (do not use bullet points, just the exact bracketed headers followed by the distilled text):
 
 [Visuals]
-Cinematic, ultra-premium UHNWI briefing room aesthetic. High-end dark textured background with subtle vertical LED accent lighting. Shot on 85mm lens with shallow depth of field (f/1.4). STRICTLY LOCKED-OFF CAMERA. Zero panning, zero erratic movement. Authentic skin textures, highly photorealistic sub-surface scattering, and specular catchlights in the corneas.
+Cinematic, ultra-premium UHNWI briefing room aesthetic. High-end dark textured background with subtle vertical LED accent lighting. Shot on 85mm lens with shallow depth of field (f/1.4). ORCHESTRATED CAMERA MOVEMENTS: The directing is world class. Orchestrate dynamic, motivated camera choreography perfectly tailored to the scene's persuasive context (e.g., a slow, intimate push-in on key points, or a fluid tracking move). Authentic skin textures, highly photorealistic sub-surface scattering, and specular catchlights in the corneas.
 
 [Action & Performance]
-High-converting elite VSL presenter performance optimized for an Elite Viewing Experience, maximum psychological retention, and absolute persuasive power. The performance radiates relaxed sovereign certainty, effortless charisma, and peer-level respect for wealthy investors. Elite Hollywood-caliber facial acting: profound emotional depth conveyed through highly engaging, warm micro-expressions (e.g., a reassuring micro-smile, relaxed jaw, and inviting, empathetic eye contact). The character brings total ease to the viewer and never looks angry or tense. Confident, warm expression paired with a single precise, welcoming hand gesture (e.g., an open palm of generosity) to emphasize the core point. Calculated conversational pacing utilizing intentional micro-pauses for pattern interruption and tension building. Unwavering, reassuring direct-to-lens eye contact. The actor is utterly convinced of their own script.
+High-converting elite VSL presenter performance optimized for an Elite Viewing Experience, maximum psychological retention, and absolute persuasive power. The performance radiates relaxed sovereign certainty, effortless charisma, and peer-level respect for wealthy investors. OSCAR-LEVEL ACTING PERFORMANCE: profound emotional depth conveyed through highly engaging, warm micro-expressions (e.g., a reassuring micro-smile, relaxed jaw, and inviting, empathetic eye contact). The character brings total ease to the viewer and never looks angry or tense. ELITE SPEECH DELIVERY: The delivery is masterful and compelling. Confident, warm expression paired with a single precise, welcoming hand gesture (e.g., an open palm of generosity) to emphasize the core point. Calculated conversational pacing utilizing intentional micro-pauses for pattern interruption and tension building. Unwavering, reassuring direct-to-lens eye contact. The actor is utterly convinced of their own script.
 
 [Script]
 Frame-accurate phonetic lip-sync mapping mapped to a strict 145-155 WPM (Words Per Minute) VSL cadence. The subject confidently speaks the following explicit line directly to the camera: "[INSERT THE EXACT SPOKEN SCRIPT/DIALOGUE FROM THE USER INPUT HERE]". Flawless physical articulation of bilabial plosives and labiodental fricatives, stretching the vowels on impact words for dramatic emphasis.

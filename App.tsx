@@ -4,7 +4,6 @@ import {
   segmentScript,
   extractFrameFromVideo,
   engineerScenePrompt,
-  generateCharacterFrame,
   optimizePromptForVideoEngine,
   setApiKey
 } from './services/geminiService';
@@ -193,33 +192,7 @@ export default function App() {
         state.targetCharacterImages
       );
 
-      let finalInframe = state.inframeImage;
-      let finalOutframe = state.outframeImage;
-      let isEnhanced = false;
-
-      if (state.targetCharacterImages.length > 0 && optimizedPrompt) {
-        setState(s => ({ ...s, sceneProcessingStatus: 'Generating hyper-realistic scene frames from optimized prompt context...' }));
-        setFrameStatus('enhancing');
-        try {
-          const [rIn, rOut] = await Promise.all([
-            generateCharacterFrame(optimizedPrompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'in-frame'),
-            generateCharacterFrame(optimizedPrompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'out-frame')
-          ]);
-
-          if (rIn.blob) {
-            finalInframe = new File([rIn.blob], `inframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
-            isEnhanced = isEnhanced || rIn.enhanced;
-          }
-          if (rOut.blob) {
-            finalOutframe = new File([rOut.blob], `outframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
-            isEnhanced = isEnhanced || rOut.enhanced;
-          }
-        } catch (e) {
-          console.error("Frame generation failed", e);
-        }
-      }
-
-      setFrameEnhanced(isEnhanced);
+      setFrameEnhanced(false);
       setFrameStatus('ready');
 
       const engineered: EngineeredScene = {
@@ -232,8 +205,6 @@ export default function App() {
 
       setState(s => ({
         ...s,
-        inframeImage: finalInframe,
-        outframeImage: finalOutframe,
         sceneProcessing: 'complete', currentPrompt: optimizedPrompt,
         completedScenes: [...s.completedScenes.filter(c => c.scene_number !== scene.scene_number), engineered]
       }));
