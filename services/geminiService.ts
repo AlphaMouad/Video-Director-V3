@@ -566,12 +566,12 @@ export const engineerScenePrompt = async (
   // Continuity context
   const continuity = isAnchorScene
     ? `ANCHOR SCENE — Scene 1 of ${completedScenes.length + 1}+. Every visual constant you define here is LOCKED for the entire video: skin rendering quality, lighting signature and direction, background depth and tones, color temperature, framing language. Describe each with the precision that lets every subsequent scene match it frame-perfectly.`
-    : `VISUAL CONTINUITY — match the established world with zero deviation.
+    : `VISUAL AND EMOTIONAL CONTINUITY — match the established world with zero deviation. Optimise The Emotions Between The Scenes to perfection. Ensure consistent character sound: the human voice must sound exactly like the same person (timbre, resonance) but allow emotional variance to match the scene's persuasive needs perfectly.
 
 LOCKED CONSTANTS from previous scenes (every physical detail is frozen):
 ${completedScenes.slice(-2).map(s => `Scene ${s.scene_number} — "${s.scene_title}":\n${s.veo_prompt.substring(0, 600)}...`).join('\n\n---\n\n')}
 
-Scene transition: ${scene.continuity?.enters_from || 'continues from previous scene energy'} → this scene. Exits to: ${scene.continuity?.exits_to || 'next scene'}.`;
+Scene transition: ${scene.continuity?.enters_from || 'continues from previous scene energy'} → this scene. Exits to: ${scene.continuity?.exits_to || 'next scene'}. Ensure the emotional transition between scenes engages the viewer completely and convinces them of the script's absolute truth.`;
 
   // ─────────────────────────────────────────────────────────────
   // Role Performance Map — YouTube Thought Leadership for UHNWI
@@ -706,9 +706,9 @@ Scene transition: ${scene.continuity?.enters_from || 'continues from previous sc
     pacing: `Conversational authority — natural rhythm with deliberate handling of emphasis words and pause points. Never rushed. Never performed.`,
   };
 
-  const energyDirection = roleData.energy + "\n\nWORLD-CLASS ACTING PERFORMANCE REQUIRED: Optimise each scene to perfection having in Mind The Full Video we're directing. The Acting Performance must be World class! Optimise The Emotional Arc to perfection, and Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to perfection please.";
-  const directorNote    = roleData.directorNote + "\n\nWORLD-CLASS ACTING: Optimise this scene to absolute perfection. The Acting must be World class! Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to perfection please.";
-  const pacingDirection = roleData.pacing + "\n\nWORLD-CLASS SPEECH DELIVERY AND PACING: The Speech Delivery and Pacing must be World class! Pacing must be flawless, optimizing the scene based on its specific purpose within the world-class video. Optimise The Emotional Arc to perfection to retain attention and maximize persuasive power.";
+  const energyDirection = roleData.energy + "\n\nWORLD-CLASS ACTING PERFORMANCE REQUIRED: Optimise each scene to perfection having in Mind The Full Video we're directing. The Acting Performance must be World class! Optimise The Emotional Arc to perfection, and Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to perfection please. The Realism must be impeccable.";
+  const directorNote    = roleData.directorNote + "\n\nWORLD-CLASS ACTING: Optimise this scene to absolute perfection. The Acting must be World class! Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to perfection please. The Realism must be impeccable.";
+  const pacingDirection = roleData.pacing + "\n\nWORLD-CLASS SPEECH DELIVERY AND PACING: The Speech Delivery and Pacing must be World class! Pacing must be flawless, optimizing the scene based on its specific purpose within the world-class video. Optimise The Emotional Arc to perfection to retain attention and maximize persuasive power. Ensure Consistent Character Sound (timbre, resonance) while allowing elite emotional variance.";
 
   // Scene essence anchor — the north star for this prompt
   const sceneEssence    = scene.acting_blueprint.scene_essence    || `A ${scene.role} that makes the viewer feel ${scene.emotional_tone}`;
