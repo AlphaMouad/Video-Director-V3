@@ -5,6 +5,7 @@ import {
   extractFrameFromVideo,
   engineerScenePrompt,
   optimizePromptForVideoEngine,
+  generateSceneVideo,
   setApiKey
 } from './services/geminiService';
 import { AppState, EngineeredScene, ScriptScene } from './types';
@@ -188,8 +189,17 @@ export default function App() {
 
       const optimizedPrompt = await optimizePromptForVideoEngine(
         rawPrompt,
-        scene.script_text
+        scene.script_text,
+        state.targetCharacterImages
       );
+
+      setState(s => ({ ...s, sceneProcessingStatus: 'Rendering VEO 2.0 Video...' }));
+
+      const videoBlob = await generateSceneVideo(optimizedPrompt, state.targetCharacterImages);
+      let generated_video_url;
+      if (videoBlob) {
+        generated_video_url = URL.createObjectURL(videoBlob);
+      }
 
       setFrameEnhanced(false);
       setFrameStatus('ready');
@@ -199,7 +209,8 @@ export default function App() {
         role: scene.role, duration_seconds: scene.duration_seconds,
         veo_prompt: optimizedPrompt, timestamp: new Date().toISOString(),
         inframe_source: state.useCustomInframe ? 'custom' : 'auto',
-        outframe_source: state.useCustomOutframe ? 'custom' : 'auto'
+        outframe_source: state.useCustomOutframe ? 'custom' : 'auto',
+        generated_video_url
       };
 
       setState(s => ({
@@ -774,6 +785,24 @@ export default function App() {
                             </button>
                           </div>
                         </div>
+
+                        {state.completedScenes.find(c => c.scene_number === scene.scene_number)?.generated_video_url && (
+                          <div className="bg-black/70 border border-gold/20 rounded-2xl p-8 shadow-2xl mb-6">
+                            <h4 className="text-gold font-serif italic text-lg mb-4 text-center">Generated VEO 2.0 Video</h4>
+                            <video
+                              src={state.completedScenes.find(c => c.scene_number === scene.scene_number)?.generated_video_url}
+                              controls
+                              className="w-full rounded-xl mb-4 border border-white/10"
+                            />
+                            <a
+                              href={state.completedScenes.find(c => c.scene_number === scene.scene_number)?.generated_video_url}
+                              download={`scene-${scene.scene_number}-veo.mp4`}
+                              className="block w-full text-center py-3 bg-gold hover:bg-yellow-500 text-black font-mono text-[10px] tracking-widest uppercase font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(202,138,4,0.2)]"
+                            >
+                              Download MP4
+                            </a>
+                          </div>
+                        )}
 
                         <div className="bg-black/70 border border-white/[0.05] rounded-2xl p-8 max-h-[560px] overflow-y-auto custom-scrollbar shadow-2xl relative">
                           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold/15 to-transparent" />

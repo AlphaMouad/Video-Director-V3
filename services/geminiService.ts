@@ -5,6 +5,7 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // MODEL REGISTRY
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
+const MODEL_VIDEO_GEN  = 'veo-2.0-generate-001';      // Veo 2.0 Video Generation
 
 // ============================================================
 // API Key management
@@ -454,11 +455,14 @@ export const engineerScenePrompt = async (
 ): Promise<string> => {
 
   const charBase64s = await Promise.all(
-    targetCharacterImages.slice(0, 1).map(img => fileToBase64(img))
+    targetCharacterImages.slice(0, 5).map(img => fileToBase64(img))
   );
 
+  const charCount      = charBase64s.length;
   const isAnchorScene  = completedScenes.length === 0;
-  const charImageLabel = 'Image 1 is the TARGET CHARACTER — the complete reference for this person\'s face, clothing, background, and setting.';
+  const charImageLabel = charCount === 1
+    ? 'Image 1 is the TARGET CHARACTER — the person who must appear in this video.'
+    : `Images 1 through ${charCount} are the TARGET CHARACTER — ${charCount} photos of the same person for maximum identity accuracy.`;
 
   // Voice fingerprint — derived from reference analysis DNA (locked for whole video)
   const voiceFingerprint = [
@@ -795,12 +799,66 @@ Write now. Five sections. Each one a single dominant signal, written as flowing 
 };
 
 // ============================================================
+// FUNCTION 6 — Generate VEO Video
+// ============================================================
+export const generateSceneVideo = async (
+  optimizedPrompt: string,
+  targetCharacterImages: File[]
+): Promise<Blob | null> => {
+  const charBase64s = await Promise.all(
+    targetCharacterImages.slice(0, 1).map(img => fileToBase64(img))
+  );
+
+  const parts: any[] = [
+    { text: optimizedPrompt }
+  ];
+
+  if (charBase64s.length > 0) {
+    parts.push({
+      inlineData: { data: charBase64s[0], mimeType: targetCharacterImages[0].type || 'image/jpeg' }
+    });
+  }
+
+  const ai = getAI();
+
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL_VIDEO_GEN,
+      contents: [{ role: 'user', parts }],
+      config: { responseModalities: ['VIDEO'] } // Instruct the API we want a video out
+    });
+
+    return extractVideoFromResponse(response);
+  } catch (err) {
+    console.error('Video generation failed:', err);
+    return null;
+  }
+};
+
+const extractVideoFromResponse = (response: any): Blob | null => {
+  for (const part of response.candidates?.[0]?.content?.parts || []) {
+    if (part.inlineData && (part.inlineData.mimeType.startsWith('video/') || part.inlineData.mimeType === 'application/mp4')) {
+      const bytes = atob(part.inlineData.data);
+      const arr = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+      return new Blob([arr], { type: part.inlineData.mimeType });
+    }
+  }
+  return null;
+};
+
+// ============================================================
 // FUNCTION 5 — Core Backend Video AI Orchestrator
 // ============================================================
 export const optimizePromptForVideoEngine = async (
   rawPrompt: string,
-  scriptText: string
+  scriptText: string,
+  targetCharacterImages: File[]
 ): Promise<string> => {
+  const charBase64s = await Promise.all(
+    targetCharacterImages.slice(0, 1).map(img => fileToBase64(img))
+  );
+
   const prompt = `
 Objective: You are the Core Backend Video AI Orchestrator for the Veo engine. Your singular goal is to synthesize the user's raw text, reference image, and ingredients into a structured, hyper-optimized prompt for the \`generate_video\` tool. You must format your output exactly like Google's internal generation engine to yield an ultra-premium YouTube creator pitch video with flawless lip-sync and a strictly enforced isolated audio track.
 
@@ -850,10 +908,18 @@ ${scriptText}
 """
 `;
 
+  const parts: any[] = [
+    { text: prompt },
+    ...charBase64s.map((b64, i) => ({
+      inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
+    }))
+  ];
+
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: MODEL_TEXT_ELITE,
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    contents: [{ role: 'user', parts }],
+    config: { thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH } }
   });
 
   return response.text || '';
