@@ -6,7 +6,7 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
 const MODEL_IMAGE_GEN  = 'gemini-2.5-flash-image';    // Vision-capable image generation (Nano Banana Pro equivalent)
-const MODEL_VIDEO_GEN  = 'veo-2.0-generate-001';      // Veo 2.0 Generation
+const MODEL_VIDEO_GEN  = 'veo-3.1-generate-001';      // Veo 3.1 Generation
 
 // ============================================================
 // API Key management
@@ -928,16 +928,42 @@ export const generateSceneVideo = async (
   }
 };
 
-const extractUriFromResult = (result: any): { blob: null, uri?: string, error?: string } => {
+const extractUriFromResult = (result: any): { blob: Blob | null, uri?: string, error?: string } => {
+    // 1. Check for standard generateVideos structure (LRO)
     if (result.generatedVideos && result.generatedVideos.length > 0) {
         const videoData = result.generatedVideos[0];
+
+        // Sometimes it returns raw bytes
+        if (videoData.video && videoData.video.videoBytes) {
+           const bytes = atob(videoData.video.videoBytes);
+           const arr = new Uint8Array(bytes.length);
+           for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+           return { blob: new Blob([arr], { type: 'video/mp4' }) };
+        }
+
+        // Sometimes it returns a cloud storage URI
         if (videoData.video && videoData.video.uri) {
            return { blob: null, uri: videoData.video.uri };
         }
-    } else if (result.video_uri) {
-        return { blob: null, uri: result.video_uri };
     }
-    return { blob: null, error: 'No video URI found in the completed operation result.' };
+
+    // 2. Fallback checking for direct URI property
+    if (result.videoUri || result.video_uri) {
+        return { blob: null, uri: result.videoUri || result.video_uri };
+    }
+
+    // 3. Fallback checking standard generateContent structure (in case the SDK routes it there)
+    for (const part of result.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData && (part.inlineData.mimeType.startsWith('video/') || part.inlineData.mimeType === 'application/mp4')) {
+        const bytes = atob(part.inlineData.data);
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        return { blob: new Blob([arr], { type: part.inlineData.mimeType }) };
+      }
+    }
+
+    console.error("Unrecognized Result Payload:", result);
+    return { blob: null, error: 'Operation completed successfully, but the expected video data could not be extracted from the payload.' };
 };
 
 // ============================================================
