@@ -6,7 +6,7 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
 const MODEL_IMAGE_GEN  = 'gemini-2.5-flash-image';    // Vision-capable image generation (Nano Banana Pro equivalent)
-const MODEL_VIDEO_GEN  = 'veo-3.1-generate-001';      // Veo 3.1 Generation
+const MODEL_VIDEO_GEN  = 'veo-2.0-generate-preview';  // Veo Video Generation (v1beta API structure)
 
 // ============================================================
 // API Key management
@@ -885,85 +885,100 @@ export const generateSceneVideo = async (
   inframeBlob: Blob | null,
   outframeBlob: Blob | null
 ): Promise<{ blob: Blob | null; error?: string; uri?: string }> => {
-
-  const ai = getAI();
+  if (!userApiKey) return { blob: null, error: 'API Key not set' };
 
   try {
-    // We only pass the text prompt to Veo for now to avoid unsupported media type errors in the alpha SDK.
-    const operation = await (ai.models as any).generateVideos({
-      model: MODEL_VIDEO_GEN,
-      prompt: optimizedPrompt
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_VIDEO_GEN}:predictLongRunning?key=${userApiKey}`;
+
+    // Construct the Veo instance object. We use the generated inframe (or outframe) as the visual context base.
+    const instance: any = { prompt: optimizedPrompt };
+
+    if (inframeBlob) {
+      const inBase64 = await fileToBase64(new File([inframeBlob], 'in.jpg', { type: 'image/jpeg' }));
+      instance.image = { bytesBase64Encoded: inBase64 };
+    } else if (outframeBlob) {
+      const outBase64 = await fileToBase64(new File([outframeBlob], 'out.jpg', { type: 'image/jpeg' }));
+      instance.image = { bytesBase64Encoded: outBase64 };
+    }
+
+    const payload = {
+      instances: [instance],
+      parameters: {
+        aspectRatio: "16:9",
+        resolution: "1080p",
+        durationSeconds: 8,
+        sampleCount: 1
+      }
+    };
+
+    console.log("Initiating Veo Video Generation via predictLongRunning...");
+    const initialResponse = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
-    // Handle SDK discrepancies safely
-    if (!operation) return { blob: null, error: 'Failed to initiate video generation operation.' };
+    const operationData = await initialResponse.json();
 
-    if (operation.done && operation.result) {
-       // Operation completed immediately
-       return extractUriFromResult(operation.result);
+    if (!initialResponse.ok) {
+       console.error("Veo Initialization Error:", operationData);
+       return { blob: null, error: operationData.error?.message || 'Failed to initiate Veo generation' };
     }
 
-    if (typeof operation.update === 'function') {
-      // It's a standard LRO that supports polling
-      let done = false;
-      let attempts = 0;
-      while (!done && attempts < 30) { // Max 5 minutes
-        console.log(`Polling Veo Video (attempt ${attempts + 1})...`);
-        await new Promise(resolve => setTimeout(resolve, 10000));
-        await operation.update();
-        if (operation.done) {
-          done = true;
-        }
-        attempts++;
+    const operationName = operationData.name;
+    if (!operationName) {
+       return { blob: null, error: 'No operation name returned from predictLongRunning API.' };
+    }
+
+    console.log(`Veo Operation created: ${operationName}. Polling for completion...`);
+
+    const pollUrl = `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${userApiKey}`;
+
+    let done = false;
+    let attempts = 0;
+
+    while (!done && attempts < 40) { // Poll for ~6.5 minutes (40 * 10 seconds)
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      console.log(`Polling Veo Operation ${operationName} (attempt ${attempts + 1})...`);
+
+      const pollResponse = await fetch(pollUrl);
+      const pollData = await pollResponse.json();
+
+      if (pollData.error) {
+         console.error("Veo Polling Error:", pollData);
+         return { blob: null, error: pollData.error.message || 'Error occurred during Veo polling.' };
       }
-      if (operation.result) return extractUriFromResult(operation.result);
-      return { blob: null, error: 'Operation timed out or failed to return a result.' };
-    } else {
-      // Fallback: the SDK might have returned the final payload directly without a polling wrapper
-      return extractUriFromResult(operation);
+
+      if (pollData.done) {
+        if (pollData.response) {
+          // Extract the video URI
+          const videoUri = pollData.response.videoUri || pollData.response.video_uri;
+          if (videoUri) {
+             console.log("Veo Video successfully generated:", videoUri);
+             return { blob: null, uri: videoUri };
+          }
+
+          // Check for videoBytes fallback
+          if (pollData.response.video && pollData.response.video.videoBytes) {
+             const bytes = atob(pollData.response.video.videoBytes);
+             const arr = new Uint8Array(bytes.length);
+             for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+             return { blob: new Blob([arr], { type: 'video/mp4' }) };
+          }
+
+          return { blob: null, error: 'Operation completed, but no video URI was found in the response.' };
+        }
+        return { blob: null, error: 'Operation completed without a response object.' };
+      }
+
+      attempts++;
     }
+
+    return { blob: null, error: 'Veo video generation timed out after 6 minutes.' };
   } catch (err: any) {
-    console.error('Video generation failed:', err);
-    return { blob: null, error: err.message || 'Unknown VEO API Error' };
+    console.error('Video generation fetch failed:', err);
+    return { blob: null, error: err.message || 'Unknown Network Error during Veo generation' };
   }
-};
-
-const extractUriFromResult = (result: any): { blob: Blob | null, uri?: string, error?: string } => {
-    // 1. Check for standard generateVideos structure (LRO)
-    if (result.generatedVideos && result.generatedVideos.length > 0) {
-        const videoData = result.generatedVideos[0];
-
-        // Sometimes it returns raw bytes
-        if (videoData.video && videoData.video.videoBytes) {
-           const bytes = atob(videoData.video.videoBytes);
-           const arr = new Uint8Array(bytes.length);
-           for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-           return { blob: new Blob([arr], { type: 'video/mp4' }) };
-        }
-
-        // Sometimes it returns a cloud storage URI
-        if (videoData.video && videoData.video.uri) {
-           return { blob: null, uri: videoData.video.uri };
-        }
-    }
-
-    // 2. Fallback checking for direct URI property
-    if (result.videoUri || result.video_uri) {
-        return { blob: null, uri: result.videoUri || result.video_uri };
-    }
-
-    // 3. Fallback checking standard generateContent structure (in case the SDK routes it there)
-    for (const part of result.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData && (part.inlineData.mimeType.startsWith('video/') || part.inlineData.mimeType === 'application/mp4')) {
-        const bytes = atob(part.inlineData.data);
-        const arr = new Uint8Array(bytes.length);
-        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-        return { blob: new Blob([arr], { type: part.inlineData.mimeType }) };
-      }
-    }
-
-    console.error("Unrecognized Result Payload:", result);
-    return { blob: null, error: 'Operation completed successfully, but the expected video data could not be extracted from the payload.' };
 };
 
 // ============================================================
