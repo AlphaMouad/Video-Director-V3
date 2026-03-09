@@ -747,6 +747,8 @@ VEO CREATIVE DIRECTION PHILOSOPHY:
 ══════════════════════════════════════════════════════════════
 VEO responds to emotional truth, not checklists. One vivid note from a great director creates a performance. Twenty bullet points create a robot. Your task: synthesize everything below into a VEO prompt with FIVE sections — each delivering ONE dominant signal as flowing cinematic prose. No bullets within sections. No labeled sub-categories. Write like a director who communicates through feeling and image.
 
+Ensure World Class Prompt Engineering optimizing for absolute hyper-realism, Oscar-level acting (warmth, effortless charisma, relaxed facial muscles - strictly NO aggressive/tense descriptors), elite speech delivery, optimal pacing, smooth emotional transitions, and 100% consistent character vocal identity (Character Labeling with flawless US English accent).
+
 ══════════════════════════════════════════════════════════════
 IMAGES (study before writing):
 ══════════════════════════════════════════════════════════════
@@ -817,7 +819,7 @@ Character:
 
 Shot:
 
-[Open from Image 1: describe the framing, the camera-to-subject distance, where this person sits in the frame and how much space they command. Then describe how the camera behaves across the ${scene.duration_seconds} seconds: does it hold absolutely still, letting their stillness build authority? Does it make a barely perceptible push toward them as the key word arrives — closing distance by inches, not feet? Close on Image 2's framing. This camera has a perspective — it is not a recording device. It is moved by what it witnesses. Give it a point of view.]
+[Open from Image 1: describe the framing, the camera-to-subject distance, where this person sits in the frame and how much space they command. Describe how the camera behaves across the ${scene.duration_seconds} seconds. IMPORTANT: Camera movements must be minimal. Default to high-status stillness and locked-off frames unless movement is absolutely necessary for profound psychological impact. Close on Image 2's framing. This camera has a perspective — it is not a recording device. It is moved by what it witnesses. Give it a point of view.]
 
 ---
 
@@ -827,13 +829,13 @@ Performance:
 
 This presenter is ${personaSummary}. For this audience, the performance skill that matters most is high-status stillness punctuated by motivated movement — when they move, it carries meaning; when still, that stillness is the performance.
 
-The face: before the first word, the face already holds the full weight of what this scene is about to say. What is leaking through composure — the specific micro-expression of ${emotionalCore}. The eyes: ${referenceAnalysis.character?.acting_style?.eye_behavior || 'direct, warm, absolutely held — the ease of someone accustomed to consequential conversations'}. The body and hands: ${physicalSig} — describe exactly what triggers movement and where the body arrives. Every gesture is discovered, never performed. Every frame is a still worth pausing on — not because it is theatrical, but because this person is this present and this genuinely engaged.]
+The face: before the first word, the face already holds the full weight of what this scene is about to say. What is leaking through composure — the specific micro-expression of ${emotionalCore}. Enforce Oscar-level acting emphasizing warmth, effortless charisma, and relaxed facial muscles (strictly avoid aggressive or tense descriptors to ensure viewer ease). The eyes: ${referenceAnalysis.character?.acting_style?.eye_behavior || 'direct, warm, absolutely held — the ease of someone accustomed to consequential conversations'}. The body and hands: ${physicalSig} — describe exactly what triggers movement and where the body arrives. Every gesture is discovered, never performed. Every frame is a still worth pausing on, achieving absolute hyper-realism. Ensure the acting performance is highly engaging, convincing, dynamic, and perfectly humanized. Ensure smooth emotional transitions from previous scenes for maximum viewer retention and persuasion.]
 
 ---
 
 Voice:
 
-[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. Natural Standard American English, warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer.
+[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. Apply a precise Character Label to ensure a 100% consistent character vocal identity (timbre and resonance with a flawless US English accent) across all scenes. Natural Standard American English, warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer. Ensure elite speech delivery and optimal pacing.
 
 ${pacingDirection}
 
