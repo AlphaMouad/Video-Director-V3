@@ -895,10 +895,10 @@ export const generateSceneVideo = async (
 
     if (inframeBlob) {
       const inBase64 = await fileToBase64(new File([inframeBlob], 'in.jpg', { type: 'image/jpeg' }));
-      instance.image = { bytesBase64Encoded: inBase64 };
+      instance.image = { bytesBase64Encoded: inBase64, mimeType: 'image/jpeg' };
     } else if (outframeBlob) {
       const outBase64 = await fileToBase64(new File([outframeBlob], 'out.jpg', { type: 'image/jpeg' }));
-      instance.image = { bytesBase64Encoded: outBase64 };
+      instance.image = { bytesBase64Encoded: outBase64, mimeType: 'image/jpeg' };
     }
 
     const payload = {
