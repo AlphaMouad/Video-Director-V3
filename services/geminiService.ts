@@ -6,7 +6,7 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
 const MODEL_IMAGE_GEN  = 'gemini-2.5-flash-image';    // Vision-capable image generation (Nano Banana Pro equivalent)
-const MODEL_VIDEO_GEN  = 'veo-3.1-generate-001';      // Veo 3.1 Generation
+const MODEL_VIDEO_GEN  = 'veo-2.0-generate-001';      // Veo 2.0 Generation
 
 // ============================================================
 // API Key management
