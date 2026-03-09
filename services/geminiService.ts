@@ -5,7 +5,7 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // MODEL REGISTRY
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
-const MODEL_IMAGE_GEN  = 'gemini-3-pro-image-preview'; // Nano Banana Pro
+const MODEL_IMAGE_GEN  = 'imagen-3.0-generate-001';   // Use public Imagen 3 for Nano Banana Pro frames
 const MODEL_VIDEO_GEN  = 'veo-2.0-generate-001';      // Veo 3.1 / 2.0 Video Generation
 
 // ============================================================
@@ -454,9 +454,9 @@ export const generateCharacterFrame = async (
   role:                  string,
   emotion:               string,
   frameType:             'in-frame' | 'out-frame'
-): Promise<{ blob: Blob | null; enhanced: boolean }> => {
+): Promise<{ blob: Blob | null; enhanced: boolean; error?: string }> => {
 
-  if (targetCharacterImages.length === 0) return { blob: null, enhanced: false };
+  if (targetCharacterImages.length === 0) return { blob: null, enhanced: false, error: 'No character images provided' };
 
   const charBase64s = await Promise.all(
     targetCharacterImages.slice(0, 3).map(img => fileToBase64(img))
@@ -514,11 +514,12 @@ OUTPUT: One single hyper-realistic photograph. Nothing else.
         return { blob: new Blob([arr], { type: 'image/jpeg' }), enhanced: true };
       }
     }
-  } catch (err) {
-    console.error('Nano Banana Pro image generation failed:', err);
+  } catch (err: any) {
+    console.error('Image generation failed:', err);
+    return { blob: null, enhanced: false, error: err.message || 'Unknown API Error' };
   }
 
-  return { blob: null, enhanced: false };
+  return { blob: null, enhanced: false, error: 'No image data in response' };
 };
 
 // ============================================================
@@ -882,7 +883,7 @@ export const generateSceneVideo = async (
   optimizedPrompt: string,
   inframeBlob: Blob | null,
   outframeBlob: Blob | null
-): Promise<Blob | null> => {
+): Promise<{ blob: Blob | null; error?: string }> => {
   const parts: any[] = [
     { text: optimizedPrompt }
   ];
@@ -910,10 +911,12 @@ export const generateSceneVideo = async (
       config: { responseModalities: ['VIDEO'] } // Instruct the API we want a video out
     });
 
-    return extractVideoFromResponse(response);
-  } catch (err) {
+    const videoBlob = extractVideoFromResponse(response);
+    if (!videoBlob) return { blob: null, error: 'No video data returned from VEO model.' };
+    return { blob: videoBlob };
+  } catch (err: any) {
     console.error('Video generation failed:', err);
-    return null;
+    return { blob: null, error: err.message || 'Unknown VEO API Error' };
   }
 };
 

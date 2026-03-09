@@ -45,6 +45,7 @@ export default function App() {
   const [isKeySet, setIsKeySet]       = useState(false);
   const [frameStatus, setFrameStatus] = useState<FrameStatus>('idle');
   const [frameEnhanced, setFrameEnhanced] = useState(false);
+  const [generationErrors, setGenerationErrors] = useState<{ images?: string, video?: string }>({});
   const [charDragOver, setCharDragOver]   = useState(false);
 
   const videoInputRef   = useRef<HTMLInputElement>(null);
@@ -180,6 +181,7 @@ export default function App() {
     const scene = state.scriptSegmentation.scenes[state.selectedSceneIndex];
     try {
       setState(s => ({ ...s, sceneProcessing: 'engineering', sceneProcessingStatus: 'High thinking mode — crafting your elite VEO 3.1 prompt...', error: null }));
+      setGenerationErrors({});
 
       const rawPrompt = await engineerScenePrompt(
         scene, state.referenceAnalysis,
@@ -199,8 +201,9 @@ export default function App() {
       let outBlob: Blob | null = null;
       let isEnhanced = false;
 
+      let imagesErrorStr = '';
       if (state.targetCharacterImages.length > 0 && optimizedPrompt) {
-        setState(s => ({ ...s, sceneProcessingStatus: 'Generating Nano Banana Pro context frames...' }));
+        setState(s => ({ ...s, sceneProcessingStatus: 'Generating Elite context frames (Imagen 3)...' }));
         setFrameStatus('enhancing');
         try {
           const [rIn, rOut] = await Promise.all([
@@ -212,23 +215,35 @@ export default function App() {
             inBlob = rIn.blob;
             finalInframe = new File([rIn.blob], `inframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
             isEnhanced = isEnhanced || rIn.enhanced;
+          } else if (rIn.error) {
+             imagesErrorStr += `In-frame error: ${rIn.error}. `;
           }
+
           if (rOut.blob) {
             outBlob = rOut.blob;
             finalOutframe = new File([rOut.blob], `outframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
             isEnhanced = isEnhanced || rOut.enhanced;
+          } else if (rOut.error) {
+             imagesErrorStr += `Out-frame error: ${rOut.error}.`;
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error("Frame generation failed", e);
+          imagesErrorStr = e.message || 'Unknown Frame Generation Error';
         }
       }
 
       setState(s => ({ ...s, sceneProcessingStatus: 'Rendering VEO 3.1 Video...' }));
 
-      const videoBlob = await generateSceneVideo(optimizedPrompt, inBlob, outBlob);
+      const videoResult = await generateSceneVideo(optimizedPrompt, inBlob, outBlob);
       let generated_video_url;
-      if (videoBlob) {
-        generated_video_url = URL.createObjectURL(videoBlob);
+      let videoErrorStr = videoResult.error;
+
+      if (videoResult.blob) {
+        generated_video_url = URL.createObjectURL(videoResult.blob);
+      }
+
+      if (imagesErrorStr || videoErrorStr) {
+         setGenerationErrors({ images: imagesErrorStr, video: videoErrorStr });
       }
 
       setFrameEnhanced(isEnhanced);
@@ -245,6 +260,8 @@ export default function App() {
 
       setState(s => ({
         ...s,
+        inframeImage: finalInframe,
+        outframeImage: finalOutframe,
         sceneProcessing: 'complete', currentPrompt: optimizedPrompt,
         completedScenes: [...s.completedScenes.filter(c => c.scene_number !== scene.scene_number), engineered]
       }));
@@ -816,9 +833,18 @@ export default function App() {
                           </div>
                         </div>
 
+                        {(generationErrors.images || generationErrors.video) && (
+                          <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-6 mb-6">
+                            <h4 className="text-red-400 font-mono text-xs uppercase tracking-widest mb-3">Generation Errors</h4>
+                            {generationErrors.images && <p className="text-red-200 text-sm mb-2"><strong className="text-red-300">Images:</strong> {generationErrors.images}</p>}
+                            {generationErrors.video && <p className="text-red-200 text-sm"><strong className="text-red-300">Video (Veo):</strong> {generationErrors.video}</p>}
+                            <p className="text-slate-400 text-xs mt-3 italic">Note: If you lack whitelist access to `veo-2.0-generate-001` or `imagen-3.0-generate-001`, the API will return 404 or 403 errors. The text prompt was still successfully generated.</p>
+                          </div>
+                        )}
+
                         {state.completedScenes.find(c => c.scene_number === scene.scene_number)?.generated_video_url && (
                           <div className="bg-black/70 border border-gold/20 rounded-2xl p-8 shadow-2xl mb-6">
-                            <h4 className="text-gold font-serif italic text-lg mb-4 text-center">Generated VEO 2.0 Video</h4>
+                            <h4 className="text-gold font-serif italic text-lg mb-4 text-center">Generated VEO 3.1 Video</h4>
                             <video
                               src={state.completedScenes.find(c => c.scene_number === scene.scene_number)?.generated_video_url}
                               controls
