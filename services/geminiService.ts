@@ -476,12 +476,12 @@ Image ${charCount + 1} is the POSE REFERENCE — study only the body angle, head
 WHAT YOU ARE DOING:
 Take the person from Images 1–${charCount} and render them in a slightly adjusted pose and expression that fits the scene. Think of it as a photographer saying: "Good — now shift slightly and give me ${emotion}." Same person. Same place. Same clothes. Same light. Just a different moment.
 
-ABSOLUTE RULES:
-1. IDENTITY: The face must be 100% the person from Images 1–${charCount}. Every feature — bone structure, skin tone, eyes, nose, lips, hair, any marks or asymmetries — preserved exactly. Zero blending with the pose reference person.
-2. BACKGROUND & SETTING: Must be identical to what appears in the character's photos. Same room, same environment, same lighting direction and color temperature. Do not use the pose reference background.
-3. WARDROBE: Identical clothing from the character's photos. Same garments, same colors, same fit.
-4. POSE & EXPRESSION ONLY: Adjust the body posture and head angle toward the geometry shown in Image ${charCount + 1}. Adjust the expression to convey: ${emotion} for a ${role} performance. Changes should feel natural — as if captured in the next frame of a photoshoot.
-5. PHOTOREALISM: Indistinguishable from a real photograph. Visible skin pores. Natural subsurface scattering. Authentic catchlights matching the character's environment. Individual hair strands. No smoothing. No CGI sheen. No artifacts.
+ABSOLUTE RULES FOR 100% FIDELITY:
+1. STRICT IDENTITY PRESERVATION: The face must be an EXACT, pixel-perfect match to the person from Images 1–${charCount}. Every feature — bone structure, skin tone, eyes, nose, lips, hair texture, any marks, and asymmetries — MUST be preserved exactly. ZERO blending or morphing with the pose reference person.
+2. EXACT BACKGROUND & SETTING: Must remain 100% identical to what appears in the character's photos. Same room depth, exact same environment objects, same lighting direction, and identical color temperature. Ignore the pose reference background completely.
+3. EXACT WARDROBE: Identical clothing from the character's photos. Exact same garments, textures, colors, and fit. NO creative changes to the attire.
+4. POSE & EXPRESSION ONLY: Subtly adjust the body posture and head angle toward the geometry shown in Image ${charCount + 1}. Adjust the expression to convey: ${emotion} for a ${role} performance. These changes must feel absolutely natural and grounded.
+5. ABSOLUTE HYPER-REALISM: The output must be indistinguishable from a real, unedited photograph taken by an elite portrait photographer. Visible skin pores, natural subsurface scattering, authentic catchlights matching the character's exact environment, and individual hair strands. Absolutely NO smoothing, NO CGI sheen, NO plastic look, and ZERO artifacts.
 
 OUTPUT: One single photorealistic photograph. Nothing else.
 `;
@@ -819,17 +819,17 @@ Character:
 
 Shot:
 
-[Open from Image 1: describe the framing, the camera-to-subject distance, where this person sits in the frame and how much space they command. Describe how the camera behaves across the ${scene.duration_seconds} seconds. IMPORTANT: Camera movements must be minimal. Default to high-status stillness and locked-off frames unless movement is absolutely necessary for profound psychological impact. Close on Image 2's framing. This camera has a perspective — it is not a recording device. It is moved by what it witnesses. Give it a point of view.]
+[Open from Image 1: describe the precise framing, camera-to-subject distance, and how the subject commands the space. ABSOLUTE RULE: The camera MUST remain completely still. ZERO camera movement. Locked-off frames only. Use a stationary, tripod-mounted perspective. High-status stillness is the priority. Close on Image 2's framing without any pan, tilt, or zoom.]
 
 ---
 
 Performance:
 
-[The scene is: "${sceneEssence}". Let that image govern every choice. Now synthesize the emotional core (${emotionalCore}), the physical signature (${physicalSig}), the expression, and the gesture into ONE unbroken performance direction. Write as if you are standing behind the camera whispering to this person thirty seconds before the take.
+[The scene is: "${sceneEssence}". Let that image govern every choice. Synthesize the emotional core (${emotionalCore}), physical signature (${physicalSig}), expression, and gesture into an elite, unbroken performance direction. Orchestrate this scene at the absolute highest level of cinematic realism.
 
-This presenter is ${personaSummary}. For this audience, the performance skill that matters most is high-status stillness punctuated by motivated movement — when they move, it carries meaning; when still, that stillness is the performance.
+This presenter is ${personaSummary}. For this audience, the performance skill that matters most is high-status stillness. When they do move, it is highly deliberate, motivated, and carries immense weight.
 
-The face: before the first word, the face already holds the full weight of what this scene is about to say. What is leaking through composure — the specific micro-expression of ${emotionalCore}. Enforce Oscar-level acting emphasizing warmth, effortless charisma, and relaxed facial muscles (strictly avoid aggressive or tense descriptors to ensure viewer ease). The eyes: ${referenceAnalysis.character?.acting_style?.eye_behavior || 'direct, warm, absolutely held — the ease of someone accustomed to consequential conversations'}. The body and hands: ${physicalSig} — describe exactly what triggers movement and where the body arrives. Every gesture is discovered, never performed. Every frame is a still worth pausing on, achieving absolute hyper-realism. Ensure the acting performance is highly engaging, convincing, dynamic, and perfectly humanized. Ensure smooth emotional transitions from previous scenes for maximum viewer retention and persuasion.]
+The face: before the first word, the face already holds the full weight of the scene. What leaks through composure is the specific micro-expression of ${emotionalCore}. Enforce Oscar-level acting emphasizing intense realism, profound warmth, effortless charisma, and completely relaxed facial muscles. STRICTLY AVOID any aggressive, tense, or unnatural descriptors. The eyes: ${referenceAnalysis.character?.acting_style?.eye_behavior || 'direct, warm, absolutely held — piercing yet inviting, conveying the deep ease of someone accustomed to highly consequential conversations'}. The body and hands: ${physicalSig} — describe exactly what triggers the minimal movement and where the body arrives. Every gesture is discovered in the moment, never performed or rehearsed. Every single frame must be a highly engaging, dynamic, and convincing portrait of humanity. Ensure smooth, seamless emotional transitions from previous scenes to maximize viewer retention and trust. The result must be breathtakingly real.]
 
 ---
 
