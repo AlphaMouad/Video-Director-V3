@@ -188,14 +188,14 @@ export const segmentScript = async (
   referenceAnalysis: ReferenceAnalysis
 ): Promise<ScriptSegmentation> => {
 
-  // Timing math: at deliberate UHNWI pace (110 WPM) + natural pauses, 8s = ~13 spoken words.
-  // At brisk-but-clear pace (130 WPM), 8s = ~17 words. Safe maximum: 15 words including pauses.
-  const MAX_WORDS = 15;
+  // Timing math: moderately fast but elite pacing (140-150 WPM) + calculated micro-pauses.
+  // At this pace, 8s allows for ~18-20 words, leaving enough room for impact without rushing.
+  const MAX_WORDS = 20;
   const MAX_SECONDS = 8.0;
 
   const prompt = `
-You are a world-class YouTube director, performance architect, and script editor.
-You are building an elite thought-leadership video for UHNWI investors — family office principals, private equity professionals, and sophisticated capital allocators.
+You are a world-class YouTube director, performance architect, and elite script optimizer.
+You are building the absolute highest-tier thought-leadership video for UHNWI investors — family office principals, private equity professionals, and sophisticated capital allocators. The pace must be moderately fast: energetic, highly engaging, and perfectly optimized — not too slow to lose attention, and not too fast to lose authority.
 
 YOUR TWO JOBS:
 1. Generate a MASTER DIRECTING VISION for the full video (voice lock, energy arc, character through-line)
@@ -234,23 +234,22 @@ RETENTION ARC (structure the full video around this):
 6. Generous close: Viewer leaves richer than they arrived — satisfied, not sold
 
 ═══════════════════════════════════════════════════
-TIMING ENFORCEMENT — THIS IS ABSOLUTE:
+TIMING ENFORCEMENT & ELITE SCRIPT OPTIMIZATION:
 ═══════════════════════════════════════════════════
 
-HARD RULE: Every scene MUST be deliverable in ≤${MAX_SECONDS} seconds.
-TIMING MATH: At a deliberate UHNWI presentation pace with natural pauses:
-  - 8 seconds of speech = maximum ${MAX_WORDS} spoken words
-  - This includes pauses (each pause ≈ 0.4-0.6s, reducing word budget)
-  - Formula: (8s - total_pause_seconds) × (words_per_second at 110-130 WPM) = word budget
+HARD RULE: Every scene MUST be perfectly deliverable in ≤${MAX_SECONDS} seconds.
+TIMING MATH: At a moderately fast, highly engaging elite pace (140-150 WPM):
+  - 8 seconds of speech = maximum ${MAX_WORDS} spoken words.
+  - This pace leaves room for calculated, profound micro-pauses that land the impact.
 
-SCRIPT ADJUSTMENT AUTHORITY: You MAY trim the script_text for timing compliance.
-  ALLOWED: Remove connective filler ("and so", "you know", "basically", "essentially")
-  ALLOWED: Tighten redundant qualifiers ("really very important" → "critical")
-  ALLOWED: Compress setup while preserving the core thought
-  NEVER CHANGE: The specific idea, the key insight, any named data point or number, the meaning
-  NEVER CHANGE: The voice or register — trimmed text must sound identical to the original intent
-  If trimmed: preserve original in original_script_text field
-  Count words precisely and report in word_count field
+SCRIPT ADJUSTMENT AUTHORITY: You are AUTHORIZED and ENCOURAGED to modify, tighten, and elevate the script for perfect pacing, superior flow, and maximum impact.
+  ALLOWED: Rewrite clunky sentences to be sharper, more punchy, and highly articulate.
+  ALLOWED: Remove all connective filler, redundancies, and weak qualifiers.
+  ALLOWED: Condense multi-clause sentences into single, powerful statements.
+  NEVER CHANGE: The specific data points, the named numbers, the absolute core meaning.
+  MANDATORY: If you modify the script, the new version must sound MORE intelligent, MORE confident, and perfectly calibrated for the moderately fast pace.
+  If altered: preserve the original in the original_script_text field.
+  Count words precisely and report in the word_count field.
 
 AVAILABLE ROLES:
 Core: Hook / Pattern Interrupt / Value Delivery / Social Proof / Bridge / Call to Action / Storytelling / Demonstration / Objection Handler / Open Loop / Closing
