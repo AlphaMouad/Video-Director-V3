@@ -189,13 +189,13 @@ export const segmentScript = async (
 ): Promise<ScriptSegmentation> => {
 
   // Timing math: moderately fast but elite pacing (140-150 WPM) + calculated micro-pauses.
-  // At this pace, 8s allows for ~18-20 words, leaving enough room for impact without rushing.
-  const MAX_WORDS = 20;
-  const MAX_SECONDS = 8.0;
+  // EXACTLY 8 seconds per scene. No short scenes. Merge thoughts to hit the 18-20 word target.
+  const TARGET_WORDS = "18-20";
+  const EXACT_SECONDS = 8.0;
 
   const prompt = `
 You are a world-class YouTube director, performance architect, and elite script optimizer.
-You are building the absolute highest-tier thought-leadership video for UHNWI investors — family office principals, private equity professionals, and sophisticated capital allocators. The pace must be moderately fast: energetic, highly engaging, and perfectly optimized — not too slow to lose attention, and not too fast to lose authority.
+You are building the absolute highest-tier thought-leadership video for UHNWI investors. The pace must be moderately fast: energetic, highly engaging, and perfectly optimized — not too slow to lose attention, and not too fast to lose authority.
 
 YOUR TWO JOBS:
 1. Generate a MASTER DIRECTING VISION for the full video (voice lock, energy arc, character through-line)
@@ -237,38 +237,26 @@ RETENTION ARC (structure the full video around this):
 TIMING ENFORCEMENT & ELITE SCRIPT OPTIMIZATION:
 ═══════════════════════════════════════════════════
 
-HARD RULE: Every scene MUST be perfectly deliverable in ≤${MAX_SECONDS} seconds.
-TIMING MATH: At a moderately fast, highly engaging elite pace (140-150 WPM):
-  - 8 seconds of speech = maximum ${MAX_WORDS} spoken words.
-  - This pace leaves room for calculated, profound micro-pauses that land the impact.
+ABSOLUTE HARD RULE: Every single scene MUST be exactly ${EXACT_SECONDS} seconds.
+ZERO EXCEPTIONS. We do NOT want 5, 6, or 7-second scenes. Every scene must utilize the full 8-second VEO generation window.
 
-SCRIPT ADJUSTMENT AUTHORITY: You are AUTHORIZED and ENCOURAGED to modify, tighten, and elevate the script for perfect pacing, superior flow, and maximum impact.
+TIMING MATH & MERGING LOGIC: At a moderately fast, highly engaging elite pace (140-150 WPM):
+  - 8 seconds of speech requires EXACTLY ${TARGET_WORDS} spoken words.
+  - You MUST group, combine, and merge script thoughts together until you hit the ${TARGET_WORDS} word target per scene.
+  - Do not create a new scene just because a sentence ends. Flow the script continuously into 8-second (${TARGET_WORDS} word) blocks.
+
+SCRIPT ADJUSTMENT AUTHORITY: You are AUTHORIZED and ENCOURAGED to modify, tighten, expand, and elevate the script for perfect 8-second pacing, superior flow, and maximum impact.
+  ALLOWED: Merge short sentences together.
   ALLOWED: Rewrite clunky sentences to be sharper, more punchy, and highly articulate.
-  ALLOWED: Remove all connective filler, redundancies, and weak qualifiers.
-  ALLOWED: Condense multi-clause sentences into single, powerful statements.
+  ALLOWED: Remove connective filler.
   NEVER CHANGE: The specific data points, the named numbers, the absolute core meaning.
-  MANDATORY: If you modify the script, the new version must sound MORE intelligent, MORE confident, and perfectly calibrated for the moderately fast pace.
+  MANDATORY: If you modify the script, the new version must sound MORE intelligent, MORE confident, and perfectly calibrated to fill exactly 8 seconds (${TARGET_WORDS} words).
   If altered: preserve the original in the original_script_text field.
   Count words precisely and report in the word_count field.
 
 AVAILABLE ROLES:
 Core: Hook / Pattern Interrupt / Value Delivery / Social Proof / Bridge / Call to Action / Storytelling / Demonstration / Objection Handler / Open Loop / Closing
 YouTube Thought Leadership: Insight Reveal / Framework / Case Study / Market Intelligence / Perspective Shift / Action Framework
-
-ROLE TIMING PROFILES:
-- Hook: 6-7s (sharp, immediate — no setup wasted)
-- Pattern Interrupt: 4-6s (punchy, contrast is everything)
-- Value Delivery / Insight Reveal: 6-8s (deliberate, ideas need room)
-- Framework / Action Framework: 7-8s (each component needs its beat)
-- Case Study / Storytelling: 7-8s (specific detail needs space)
-- Market Intelligence: 6-7s (precision is the message)
-- Perspective Shift: 6-8s (the turn needs time to land)
-- Social Proof: 5-7s (understatement — facts only)
-- Bridge: 5-6s (momentum — don't linger)
-- Objection Handler: 6-7s (pause before answer is everything)
-- Open Loop: 5-6s (incompletion is the point — don't overstay)
-- Call to Action: 6-8s (slow, warm, no pressure)
-- Closing: 6-8s (the slowest scene — final gravity)
 
 ═══════════════════════════════════════════════════
 ACTING BLUEPRINT — per scene:
@@ -379,8 +367,8 @@ RETURN COMPLETE VALID JSON — exactly this structure:
 }
 
 QUALITY CHECK BEFORE RETURNING: For every scene, verify:
-✓ word_count ≤ ${MAX_WORDS} (count precisely — every word in script_text)
-✓ duration_seconds ≤ ${MAX_SECONDS}
+✓ word_count is exactly ${TARGET_WORDS} (count precisely — every word in script_text)
+✓ duration_seconds is EXACTLY ${EXACT_SECONDS} (No 6s or 7s scenes allowed)
 ✓ script_text preserves 100% of the original meaning
 ✓ narrative_position references the energy arc from directing_vision
 ✓ All timestamps exist in the provided frame library
@@ -834,15 +822,15 @@ The face: before the first word, the face already holds the full weight of the s
 
 Voice:
 
-[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. Apply a precise Character Label to ensure a 100% consistent character vocal identity (timbre and resonance with a flawless US English accent) across all scenes. Natural Standard American English, warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer. Ensure elite speech delivery and optimal pacing.
+[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. Apply a precise Character Label to ensure a 100% consistent character vocal identity (timbre and resonance with a flawless US English accent) across all scenes. Natural Standard American English, warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer.
+
+ENFORCE ABSOLUTE ELITE SPEECH DELIVERY: The performance must be breathtakingly natural, dynamic, and engaging. The pacing is moderately fast (140-150 WPM) but never rushed. Achieve a flawless, organic cadence where the breath controls the thought. Ensure rich, chest-driven resonance and absolute sonic clarity.
 
 ${pacingDirection}
 
-The emphasis words are ${emphasisWords}. On these words, the voice does not increase in volume — it becomes more precise. Consonants sharpen. Vowels fill completely. Then silence — long enough for the word to exist in the room before the next arrives. This is emphasis-through-precision, not volume. UHNWI listeners detect the difference immediately.
+The emphasis words are ${emphasisWords}. On these words, the voice does not increase in volume — it becomes more precise. Consonants sharpen. Vowels fill completely. The micro-pauses — ${pauseMap} — are profound, calculated decisions that land the impact perfectly. This is emphasis-through-precision, not volume. UHNWI listeners detect the difference immediately.
 
-Every sentence ends with a falling close. The voice drops at the period — authority never rises at sentence endings. Every statement is a fact placed on a table.
-
-The silences — ${pauseMap} — are decisions. The confident silence of someone who knows what they just said is worth sitting with. Articulation: every word arrives complete, forward-placed, clean word boundaries, nothing swallowed or blurred. ZERO music. ZERO audio effects. ZERO ambient sound. Voice only. Complete acoustic silence.]
+Every sentence ends with a falling close. The voice drops at the period — authority never rises at sentence endings. Every statement is a fact placed on a table with total conviction. Articulation: every word arrives complete, forward-placed, clean word boundaries, nothing swallowed or blurred. ZERO music. ZERO audio effects. ZERO ambient sound. Voice only. Complete acoustic silence.]
 
 ---
 
