@@ -5,7 +5,8 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // MODEL REGISTRY
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
-const MODEL_VIDEO_GEN  = 'veo-2.0-generate-001';      // Veo 2.0 Video Generation
+const MODEL_IMAGE_GEN  = 'gemini-3-pro-image-preview'; // Nano Banana Pro
+const MODEL_VIDEO_GEN  = 'veo-2.0-generate-001';      // Veo 3.1 / 2.0 Video Generation
 
 // ============================================================
 // API Key management
@@ -445,6 +446,82 @@ export const extractFrameFromVideo = (videoFile: File, timestamp: string): Promi
   });
 
 // ============================================================
+// FUNCTION 3.5 — Generate Character Frame (Nano Banana Pro)
+// ============================================================
+export const generateCharacterFrame = async (
+  scenePrompt:           string,
+  targetCharacterImages: File[],
+  role:                  string,
+  emotion:               string,
+  frameType:             'in-frame' | 'out-frame'
+): Promise<{ blob: Blob | null; enhanced: boolean }> => {
+
+  if (targetCharacterImages.length === 0) return { blob: null, enhanced: false };
+
+  const charBase64s = await Promise.all(
+    targetCharacterImages.slice(0, 3).map(img => fileToBase64(img))
+  );
+
+  const charCount = charBase64s.length;
+  const charLabel = charCount === 1
+    ? 'Image 1 is THE CHARACTER — the complete reference for this person\'s face, clothing, background, and setting.'
+    : `Images 1 through ${charCount} are THE CHARACTER — ${charCount} photos of the same person. Cross-reference all of them for maximum identity, wardrobe, and environment accuracy.`;
+
+  const prompt = `
+TASK: Generate an Elite, hyper-realistic ${frameType} photograph for a video scene.
+
+${charLabel}
+The following is the Director's Scene Prompt detailing the emotional core, energy, and exact visual context of this scene:
+"""
+${scenePrompt}
+"""
+
+WHAT YOU ARE DOING:
+Take the person from the provided images and render them in a hyper-realistic photograph that perfectly captures the essence, pose, and expression required for the ${frameType} of this scene. The emotion is: "${emotion}" and the role is "${role}".
+
+ABSOLUTE RULES:
+1. IDENTITY: The face must be 100% the person from the images. Every feature — bone structure, skin tone, eyes, nose, lips, hair, any marks or asymmetries — preserved exactly.
+2. BACKGROUND & SETTING: Must be identical to what appears in the character's photos. Same room, same environment, same lighting direction and color temperature.
+3. WARDROBE: Identical clothing from the character's photos. Same garments, same colors, same fit.
+4. SCENE CONTEXT: The expression, posture, energy, and feeling must perfectly match the Director's Scene Prompt provided above. Optimize the image generation to perfection based on the scene context. Do not make the character look mad or angry; bring ease and magnetic charisma.
+5. HYPER-REALISM: Indistinguishable from a real cinematic photograph. Visible skin pores. Natural subsurface scattering. Authentic catchlights matching the character's environment. Individual hair strands.
+6. NEGATIVE PROMPT INSTRUCTIONS: No smoothing. No CGI sheen. No artifacts. No deformed limbs. No cartoonish features. No extra fingers. No aggressive or tense facial distortion.
+
+OUTPUT: One single hyper-realistic photograph. Nothing else.
+`;
+
+  const parts: any[] = [
+    ...charBase64s.map((b64, i) => ({
+      inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
+    })),
+    { text: prompt }
+  ];
+
+  const ai = getAI();
+
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL_IMAGE_GEN,
+      contents: [{ role: 'user', parts }],
+      config: { responseModalities: ['IMAGE', 'TEXT'] }
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        const bytes = atob(part.inlineData.data);
+        const arr   = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        return { blob: new Blob([arr], { type: 'image/jpeg' }), enhanced: true };
+      }
+    }
+  } catch (err) {
+    console.error('Nano Banana Pro image generation failed:', err);
+  }
+
+  return { blob: null, enhanced: false };
+};
+
+// ============================================================
 // FUNCTION 4 — Engineer Scene Prompt (God-Level VEO 3.1)
 // ============================================================
 export const engineerScenePrompt = async (
@@ -803,19 +880,24 @@ Write now. Five sections. Each one a single dominant signal, written as flowing 
 // ============================================================
 export const generateSceneVideo = async (
   optimizedPrompt: string,
-  targetCharacterImages: File[]
+  inframeBlob: Blob | null,
+  outframeBlob: Blob | null
 ): Promise<Blob | null> => {
-  const charBase64s = await Promise.all(
-    targetCharacterImages.slice(0, 1).map(img => fileToBase64(img))
-  );
-
   const parts: any[] = [
     { text: optimizedPrompt }
   ];
 
-  if (charBase64s.length > 0) {
+  if (inframeBlob) {
+    const inBase64 = await fileToBase64(new File([inframeBlob], 'in.jpg', { type: 'image/jpeg' }));
     parts.push({
-      inlineData: { data: charBase64s[0], mimeType: targetCharacterImages[0].type || 'image/jpeg' }
+      inlineData: { data: inBase64, mimeType: 'image/jpeg' }
+    });
+  }
+
+  if (outframeBlob) {
+    const outBase64 = await fileToBase64(new File([outframeBlob], 'out.jpg', { type: 'image/jpeg' }));
+    parts.push({
+      inlineData: { data: outBase64, mimeType: 'image/jpeg' }
     });
   }
 
@@ -852,32 +934,29 @@ const extractVideoFromResponse = (response: any): Blob | null => {
 // ============================================================
 export const optimizePromptForVideoEngine = async (
   rawPrompt: string,
-  scriptText: string,
-  targetCharacterImages: File[]
+  scriptText: string
 ): Promise<string> => {
-  const charBase64s = await Promise.all(
-    targetCharacterImages.slice(0, 1).map(img => fileToBase64(img))
-  );
-
   const prompt = `
-Objective: You are the Core Backend Video AI Orchestrator for the Veo engine. Your singular goal is to synthesize the user's raw text, reference image, and ingredients into a structured, hyper-optimized prompt for the \`generate_video\` tool. You must format your output exactly like Google's internal generation engine to yield an ultra-premium YouTube creator pitch video with flawless lip-sync and a strictly enforced isolated audio track.
+Objective: You are the Core Backend Video AI Orchestrator for the Veo 3.1 engine. Your singular goal is to synthesize the user's raw text into a structured, hyper-optimized prompt for the final video generation. You must format your output exactly like Google's internal generation engine to yield an ultra-premium Elite YouTube creator pitch video with flawless lip-sync, an isolated audio track, and hyper-realistic visual fidelity.
 
 CRITICAL DIRECTIVES FOR YOUR SYNTHESIZED VIDEO PROMPT:
 
-1. DISTILLATION & CATEGORIZATION: Do not write a massive paragraph of descriptive filler. The video engine requires highly distilled, concise, and machine-readable data. You must synthesize the user's inputs strictly into four distinct headers: [Visuals], [Action & Performance], [Script], and [Audio Style].
+1. DISTILLATION & CATEGORIZATION: Do not write a massive paragraph of descriptive filler. The video engine requires highly distilled, concise, and machine-readable data. You must synthesize the user's inputs strictly into FIVE distinct headers: [Visuals], [Action & Performance], [Script], [Audio Style], and [Negative Prompts].
 
-2. PRECISE MICRO-CHOREOGRAPHY: The video model responds best to specific, isolated physical actions. To prevent AI limb-glitching and preserve rendering power for the face, strictly limit body movement. Embed this exact phrasing: "The subject maintains a confident expression and performs a single precise hand gesture with an open palm to emphasize the core point, keeping the hand cleanly in the lower frame."
+2. PRECISE MICRO-CHOREOGRAPHY: The video model responds best to specific, isolated physical actions. To prevent AI limb-glitching and preserve rendering power for the face, strictly limit body movement. Embed this exact phrasing: "The subject maintains a confident, warm expression and performs a single precise hand gesture with an open palm to emphasize the core point, keeping the hand cleanly in the lower frame."
 
-3. EXPLICIT SCRIPT INJECTION (CRITICAL FOR LIP-SYNC): The physics engine natively locks its lip-sync and micro-expressions to quoted text. You MUST extract the exact spoken dialogue the user wants delivered and explicitly embed it into your final prompt using quotation marks. Ensure flawless lip-sync with no mumbling.
+3. EXPLICIT SCRIPT INJECTION (CRITICAL FOR LIP-SYNC): The physics engine natively locks its lip-sync and micro-expressions to quoted text. You MUST extract the exact spoken dialogue the user wants delivered and explicitly embed it into your final prompt using quotation marks. Ensure flawless lip-sync with absolutely zero mumbling.
 
 4. THE IRONCLAD AUDIO WALL: The model WILL hallucinate music unless constrained physically. Use the exact ALL CAPS block provided below for the [Audio Style] section.
 
-5. ABSOLUTE FORMATTING RULE: You must return ONLY the raw text for the four bracketed sections. NO markdown code blocks. NO preamble ("Here is the prompt:"). NO postamble. DO NOT attempt to call tools or functions. Output the synthesized text immediately.
+5. ABSOLUTE FORMATTING RULE: You must return ONLY the raw text for the FIVE bracketed sections. NO markdown code blocks. NO preamble. NO postamble. Output the synthesized text immediately.
 
-6. ELITE ACTING & FACIAL MICRO-EXPRESSIONS: The acting and performance directives must radiate sovereign certainty and profound emotional depth, but MUST remain exceptionally WARM, INVITING, and REASSURING. The presenter is pitching multi-million dollar deals to UHNWI investors. Inject powerful psychological triggers, peer-to-peer authority, and undeniable cinematic conviction into the [Action & Performance] section. Explicitly describe hyper-detailed facial micro-expressions that bring EASE to the viewer (e.g., relaxed facial muscles, a subtle magnetic micro-smile, empathetic eye contact, and relaxed, confident brows). DO NOT make the character look mad, angry, intense, or calculating. Ensure the voice is locked to a NATIVE US ENGLISH ACCENT. Ensure an Elite Viewing Experience with Maximum Realism.
+6. ELITE ACTING, WARMTH & HYPER-REALISM: The acting must radiate sovereign certainty but MUST remain exceptionally WARM, INVITING, and REASSURING (bringing EASE to the viewer). The presenter is pitching multi-million dollar deals to UHNWI investors. Inject profound emotional depth via hyper-detailed, relaxed micro-expressions (e.g., magnetic micro-smile, empathetic eye contact). DO NOT make the character look mad or angry. The visuals MUST be Hyper-Realistic (visible skin pores, authentic subsurface scattering).
+
+7. EXPLICIT NEGATIVE PROMPTING: You must include a [Negative Prompts] section to explicitly ban all bad artifacts, erratic movements, angry facial expressions, bad lip-sync, and hallucinated audio.
 
 Output Format Requirements:
-Synthesize the final prompt to the video generation tool EXACTLY in this format (do not use bullet points, just the exact bracketed headers followed by the distilled text):
+Synthesize the final prompt EXACTLY in this format (do not use bullet points, just the exact bracketed headers followed by the distilled text):
 
 [Visuals]
 Cinematic, ultra-premium UHNWI briefing room aesthetic. High-end dark textured background with subtle vertical LED accent lighting. Shot on 85mm lens with shallow depth of field (f/1.4). MINIMAL CAMERA MOVEMENTS: The directing is world class. Default to a locked-off, high-authority frame. Move the camera ONLY when absolutely necessary for profound psychological impact (e.g., an imperceptible, slow push-in on a critical value point). HYPER-REALISM IS PARAMOUNT: The image must be indistinguishable from a top-tier cinematic photograph. Authentic skin textures, highly photorealistic sub-surface scattering, visible skin pores, and specular catchlights in the corneas. Ensure absolute best scene quality.
@@ -891,13 +970,16 @@ Frame-accurate phonetic lip-sync mapping mapped to a strict 145-155 WPM (Words P
 [Audio Style]
 AUTHORITATIVE, HIGH-RETENTION VSL VOCAL DELIVERY. AUTHENTIC NATIVE US ENGLISH ACCENT. PRECISE 150 WPM CADENCE. DYNAMIC PITCH VARIATION WITH HARD EMPHASIS ON CORE VALUE PROPOSITIONS AND STRATEGIC 1.5-SECOND SILENT BEATS BEFORE KEY HOOKS. COMPLETELY DEAD ACOUSTIC ROOM. STUDIO-ISOLATED DRY VOCAL RECORDING. STRICT NEGATIVE AUDIO OVERRIDE: ABSOLUTELY NO BACKGROUND MUSIC. NO YOUTUBE INTRO MUSIC. NO CINEMATIC SCORE. NO CORPORATE TRACKS. NO AMBIENT NOISE. NO SOUND EFFECTS. NO FOLEY. THE BACKGROUND MUST BE 100% DEAD SILENT. GENERATE ONLY THE CRISP, ISOLATED HUMAN VOICE DELIVERING THE EXACT SCRIPT PROVIDED.
 
+[Negative Prompts]
+CGI sheen, smoothed skin, plastic appearance, morphed limbs, extra fingers, erratic camera shaking, fast panning, hallucinated background music, Foley sound effects, ambient noise, mumbling, slurring words, out-of-sync lip movements, tense jaw, angry expression, mad look, intense aggressive staring, floating objects, background morphing, low resolution.
+
 Execution Logic:
-1. Synthesize the user's text and ingredients into the 4 exact bracketed sections above. Fill in the [INSERT...] placeholder with the actual exact dialogue requested by the user.
-2. Elevate the persuasive punch of the performance directions to match an elite UHNWI deal pitch.
-3. OUTPUT ONLY THE FOUR SECTIONS. NO OTHER TEXT.
+1. Synthesize the user's text and ingredients into the FIVE exact bracketed sections above. Fill in the [INSERT...] placeholder with the actual exact dialogue.
+2. Elevate the persuasive punch of the performance directions to match an elite UHNWI deal pitch while guaranteeing absolute viewer EASE and WARMTH.
+3. OUTPUT ONLY THE FIVE SECTIONS. NO OTHER TEXT.
 
 User Input / Context:
-User Text Prompt & Ingredients:
+Raw Director's Prompt Blueprint:
 """
 ${rawPrompt}
 """
@@ -908,18 +990,11 @@ ${scriptText}
 """
 `;
 
-  const parts: any[] = [
-    { text: prompt },
-    ...charBase64s.map((b64, i) => ({
-      inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
-    }))
-  ];
-
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: MODEL_TEXT_ELITE,
-    contents: [{ role: 'user', parts }],
-    config: { thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH } }
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    // Removed thinkingConfig to ensure fast and reliable formatting without backend 500 errors
   });
 
   return response.text || '';

@@ -4,6 +4,7 @@ import {
   segmentScript,
   extractFrameFromVideo,
   engineerScenePrompt,
+  generateCharacterFrame,
   optimizePromptForVideoEngine,
   generateSceneVideo,
   setApiKey
@@ -189,19 +190,48 @@ export default function App() {
 
       const optimizedPrompt = await optimizePromptForVideoEngine(
         rawPrompt,
-        scene.script_text,
-        state.targetCharacterImages
+        scene.script_text
       );
 
-      setState(s => ({ ...s, sceneProcessingStatus: 'Rendering VEO 2.0 Video...' }));
+      let finalInframe = state.inframeImage;
+      let finalOutframe = state.outframeImage;
+      let inBlob: Blob | null = null;
+      let outBlob: Blob | null = null;
+      let isEnhanced = false;
 
-      const videoBlob = await generateSceneVideo(optimizedPrompt, state.targetCharacterImages);
+      if (state.targetCharacterImages.length > 0 && optimizedPrompt) {
+        setState(s => ({ ...s, sceneProcessingStatus: 'Generating Nano Banana Pro context frames...' }));
+        setFrameStatus('enhancing');
+        try {
+          const [rIn, rOut] = await Promise.all([
+            generateCharacterFrame(optimizedPrompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'in-frame'),
+            generateCharacterFrame(optimizedPrompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'out-frame')
+          ]);
+
+          if (rIn.blob) {
+            inBlob = rIn.blob;
+            finalInframe = new File([rIn.blob], `inframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
+            isEnhanced = isEnhanced || rIn.enhanced;
+          }
+          if (rOut.blob) {
+            outBlob = rOut.blob;
+            finalOutframe = new File([rOut.blob], `outframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
+            isEnhanced = isEnhanced || rOut.enhanced;
+          }
+        } catch (e) {
+          console.error("Frame generation failed", e);
+        }
+      }
+
+      setState(s => ({ ...s, sceneProcessingStatus: 'Rendering VEO 3.1 Video...' }));
+
+      const videoBlob = await generateSceneVideo(optimizedPrompt, inBlob, outBlob);
       let generated_video_url;
       if (videoBlob) {
         generated_video_url = URL.createObjectURL(videoBlob);
       }
 
-      setFrameEnhanced(false);
+      setFrameEnhanced(isEnhanced);
       setFrameStatus('ready');
 
       const engineered: EngineeredScene = {
