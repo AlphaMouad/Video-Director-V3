@@ -232,13 +232,15 @@ export default function App() {
         }
       }
 
-      setState(s => ({ ...s, sceneProcessingStatus: 'Rendering VEO 3.1 Video...' }));
+      setState(s => ({ ...s, sceneProcessingStatus: 'Rendering VEO 3.1 Video (This may take several minutes)...' }));
 
       const videoResult = await generateSceneVideo(optimizedPrompt, inBlob, outBlob);
       let generated_video_url;
       let videoErrorStr = videoResult.error;
 
-      if (videoResult.blob) {
+      if (videoResult.uri) {
+        generated_video_url = videoResult.uri;
+      } else if (videoResult.blob) {
         generated_video_url = URL.createObjectURL(videoResult.blob);
       }
 
@@ -810,7 +812,7 @@ export default function App() {
                         <div className="text-center space-y-3">
                           <h3 className="font-serif italic text-3xl text-white">Engineering Scene #{String(scene.scene_number).padStart(2, '0')}</h3>
                           <p className="text-gold/35 font-mono text-[10px] tracking-[0.25em] uppercase">{state.sceneProcessingStatus}</p>
-                          <p className="text-slate-800 text-[10px] font-mono mt-1">45–90 seconds — high thinking mode</p>
+                          <p className="text-slate-800 text-[10px] font-mono mt-1">Please keep this window open.</p>
                         </div>
                       </div>
                     )}

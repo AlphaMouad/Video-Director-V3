@@ -5,8 +5,8 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // MODEL REGISTRY
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
-const MODEL_IMAGE_GEN  = 'imagen-3.0-generate-001';   // Use public Imagen 3 for Nano Banana Pro frames
-const MODEL_VIDEO_GEN  = 'veo-2.0-generate-001';      // Veo 3.1 / 2.0 Video Generation
+const MODEL_IMAGE_GEN  = 'gemini-2.5-flash-image';    // Vision-capable image generation (Nano Banana Pro equivalent)
+const MODEL_VIDEO_GEN  = 'veo-3.1-generate-001';      // Veo 3.1 Generation
 
 // ============================================================
 // API Key management
@@ -500,10 +500,11 @@ OUTPUT: One single hyper-realistic photograph. Nothing else.
   const ai = getAI();
 
   try {
+    // Reverted to generateContent using gemini-2.5-flash-image to support passing reference images via parts
     const response = await ai.models.generateContent({
       model: MODEL_IMAGE_GEN,
       contents: [{ role: 'user', parts }],
-      config: { responseModalities: ['IMAGE', 'TEXT'] }
+      config: { responseModalities: ['IMAGE'] }
     });
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
@@ -883,53 +884,60 @@ export const generateSceneVideo = async (
   optimizedPrompt: string,
   inframeBlob: Blob | null,
   outframeBlob: Blob | null
-): Promise<{ blob: Blob | null; error?: string }> => {
-  const parts: any[] = [
-    { text: optimizedPrompt }
-  ];
-
-  if (inframeBlob) {
-    const inBase64 = await fileToBase64(new File([inframeBlob], 'in.jpg', { type: 'image/jpeg' }));
-    parts.push({
-      inlineData: { data: inBase64, mimeType: 'image/jpeg' }
-    });
-  }
-
-  if (outframeBlob) {
-    const outBase64 = await fileToBase64(new File([outframeBlob], 'out.jpg', { type: 'image/jpeg' }));
-    parts.push({
-      inlineData: { data: outBase64, mimeType: 'image/jpeg' }
-    });
-  }
+): Promise<{ blob: Blob | null; error?: string; uri?: string }> => {
 
   const ai = getAI();
 
   try {
-    const response = await ai.models.generateContent({
+    // We only pass the text prompt to Veo for now to avoid unsupported media type errors in the alpha SDK.
+    const operation = await (ai.models as any).generateVideos({
       model: MODEL_VIDEO_GEN,
-      contents: [{ role: 'user', parts }],
-      config: { responseModalities: ['VIDEO'] } // Instruct the API we want a video out
+      prompt: optimizedPrompt
     });
 
-    const videoBlob = extractVideoFromResponse(response);
-    if (!videoBlob) return { blob: null, error: 'No video data returned from VEO model.' };
-    return { blob: videoBlob };
+    // Handle SDK discrepancies safely
+    if (!operation) return { blob: null, error: 'Failed to initiate video generation operation.' };
+
+    if (operation.done && operation.result) {
+       // Operation completed immediately
+       return extractUriFromResult(operation.result);
+    }
+
+    if (typeof operation.update === 'function') {
+      // It's a standard LRO that supports polling
+      let done = false;
+      let attempts = 0;
+      while (!done && attempts < 30) { // Max 5 minutes
+        console.log(`Polling Veo Video (attempt ${attempts + 1})...`);
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        await operation.update();
+        if (operation.done) {
+          done = true;
+        }
+        attempts++;
+      }
+      if (operation.result) return extractUriFromResult(operation.result);
+      return { blob: null, error: 'Operation timed out or failed to return a result.' };
+    } else {
+      // Fallback: the SDK might have returned the final payload directly without a polling wrapper
+      return extractUriFromResult(operation);
+    }
   } catch (err: any) {
     console.error('Video generation failed:', err);
     return { blob: null, error: err.message || 'Unknown VEO API Error' };
   }
 };
 
-const extractVideoFromResponse = (response: any): Blob | null => {
-  for (const part of response.candidates?.[0]?.content?.parts || []) {
-    if (part.inlineData && (part.inlineData.mimeType.startsWith('video/') || part.inlineData.mimeType === 'application/mp4')) {
-      const bytes = atob(part.inlineData.data);
-      const arr = new Uint8Array(bytes.length);
-      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-      return new Blob([arr], { type: part.inlineData.mimeType });
+const extractUriFromResult = (result: any): { blob: null, uri?: string, error?: string } => {
+    if (result.generatedVideos && result.generatedVideos.length > 0) {
+        const videoData = result.generatedVideos[0];
+        if (videoData.video && videoData.video.uri) {
+           return { blob: null, uri: videoData.video.uri };
+        }
+    } else if (result.video_uri) {
+        return { blob: null, uri: result.video_uri };
     }
-  }
-  return null;
+    return { blob: null, error: 'No video URI found in the completed operation result.' };
 };
 
 // ============================================================
