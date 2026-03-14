@@ -188,14 +188,14 @@ export const segmentScript = async (
   referenceAnalysis: ReferenceAnalysis
 ): Promise<ScriptSegmentation> => {
 
-  // Timing math: at deliberate UHNWI pace (110 WPM) + natural pauses, 8s = ~13 spoken words.
-  // At brisk-but-clear pace (130 WPM), 8s = ~17 words. Safe maximum: 15 words including pauses.
-  const MAX_WORDS = 15;
-  const MAX_SECONDS = 8.0;
+  // Timing math: moderately fast but elite pacing (140-150 WPM) + calculated micro-pauses.
+  // EXACTLY 8 seconds per scene. No short scenes. Merge thoughts to hit the 18-20 word target.
+  const TARGET_WORDS = "18-20";
+  const EXACT_SECONDS = 8.0;
 
   const prompt = `
-You are a world-class YouTube director, performance architect, and script editor.
-You are building an elite thought-leadership video for UHNWI investors — family office principals, private equity professionals, and sophisticated capital allocators.
+You are a world-class YouTube director, performance architect, and elite script optimizer.
+You are building the absolute highest-tier thought-leadership video for UHNWI investors. The pace must be moderately fast: energetic, highly engaging, and perfectly optimized — not too slow to lose attention, and not too fast to lose authority.
 
 YOUR TWO JOBS:
 1. Generate a MASTER DIRECTING VISION for the full video (voice lock, energy arc, character through-line)
@@ -234,42 +234,29 @@ RETENTION ARC (structure the full video around this):
 6. Generous close: Viewer leaves richer than they arrived — satisfied, not sold
 
 ═══════════════════════════════════════════════════
-TIMING ENFORCEMENT — THIS IS ABSOLUTE:
+TIMING ENFORCEMENT & ELITE SCRIPT OPTIMIZATION:
 ═══════════════════════════════════════════════════
 
-HARD RULE: Every scene MUST be deliverable in ≤${MAX_SECONDS} seconds.
-TIMING MATH: At a deliberate UHNWI presentation pace with natural pauses:
-  - 8 seconds of speech = maximum ${MAX_WORDS} spoken words
-  - This includes pauses (each pause ≈ 0.4-0.6s, reducing word budget)
-  - Formula: (8s - total_pause_seconds) × (words_per_second at 110-130 WPM) = word budget
+ABSOLUTE HARD RULE: Every single scene MUST be exactly ${EXACT_SECONDS} seconds.
+ZERO EXCEPTIONS. We do NOT want 5, 6, or 7-second scenes. Every scene must utilize the full 8-second VEO generation window.
 
-SCRIPT ADJUSTMENT AUTHORITY: You MAY trim the script_text for timing compliance.
-  ALLOWED: Remove connective filler ("and so", "you know", "basically", "essentially")
-  ALLOWED: Tighten redundant qualifiers ("really very important" → "critical")
-  ALLOWED: Compress setup while preserving the core thought
-  NEVER CHANGE: The specific idea, the key insight, any named data point or number, the meaning
-  NEVER CHANGE: The voice or register — trimmed text must sound identical to the original intent
-  If trimmed: preserve original in original_script_text field
-  Count words precisely and report in word_count field
+TIMING MATH & MERGING LOGIC: At a moderately fast, highly engaging elite pace (140-150 WPM):
+  - 8 seconds of speech requires EXACTLY ${TARGET_WORDS} spoken words.
+  - You MUST group, combine, and merge script thoughts together until you hit the ${TARGET_WORDS} word target per scene.
+  - Do not create a new scene just because a sentence ends. Flow the script continuously into 8-second (${TARGET_WORDS} word) blocks.
+
+SCRIPT ADJUSTMENT AUTHORITY: You are AUTHORIZED and ENCOURAGED to modify, tighten, expand, and elevate the script for perfect 8-second pacing, superior flow, and maximum impact.
+  ALLOWED: Merge short sentences together.
+  ALLOWED: Rewrite clunky sentences to be sharper, more punchy, and highly articulate.
+  ALLOWED: Remove connective filler.
+  NEVER CHANGE: The specific data points, the named numbers, the absolute core meaning.
+  MANDATORY: If you modify the script, the new version must sound MORE intelligent, MORE confident, and perfectly calibrated to fill exactly 8 seconds (${TARGET_WORDS} words).
+  If altered: preserve the original in the original_script_text field.
+  Count words precisely and report in the word_count field.
 
 AVAILABLE ROLES:
 Core: Hook / Pattern Interrupt / Value Delivery / Social Proof / Bridge / Call to Action / Storytelling / Demonstration / Objection Handler / Open Loop / Closing
 YouTube Thought Leadership: Insight Reveal / Framework / Case Study / Market Intelligence / Perspective Shift / Action Framework
-
-ROLE TIMING PROFILES:
-- Hook: 6-7s (sharp, immediate — no setup wasted)
-- Pattern Interrupt: 4-6s (punchy, contrast is everything)
-- Value Delivery / Insight Reveal: 6-8s (deliberate, ideas need room)
-- Framework / Action Framework: 7-8s (each component needs its beat)
-- Case Study / Storytelling: 7-8s (specific detail needs space)
-- Market Intelligence: 6-7s (precision is the message)
-- Perspective Shift: 6-8s (the turn needs time to land)
-- Social Proof: 5-7s (understatement — facts only)
-- Bridge: 5-6s (momentum — don't linger)
-- Objection Handler: 6-7s (pause before answer is everything)
-- Open Loop: 5-6s (incompletion is the point — don't overstay)
-- Call to Action: 6-8s (slow, warm, no pressure)
-- Closing: 6-8s (the slowest scene — final gravity)
 
 ═══════════════════════════════════════════════════
 ACTING BLUEPRINT — per scene:
@@ -380,8 +367,8 @@ RETURN COMPLETE VALID JSON — exactly this structure:
 }
 
 QUALITY CHECK BEFORE RETURNING: For every scene, verify:
-✓ word_count ≤ ${MAX_WORDS} (count precisely — every word in script_text)
-✓ duration_seconds ≤ ${MAX_SECONDS}
+✓ word_count is exactly ${TARGET_WORDS} (count precisely — every word in script_text)
+✓ duration_seconds is EXACTLY ${EXACT_SECONDS} (No 6s or 7s scenes allowed)
 ✓ script_text preserves 100% of the original meaning
 ✓ narrative_position references the energy arc from directing_vision
 ✓ All timestamps exist in the provided frame library
@@ -476,12 +463,12 @@ Image ${charCount + 1} is the POSE REFERENCE — study only the body angle, head
 WHAT YOU ARE DOING:
 Take the person from Images 1–${charCount} and render them in a slightly adjusted pose and expression that fits the scene. Think of it as a photographer saying: "Good — now shift slightly and give me ${emotion}." Same person. Same place. Same clothes. Same light. Just a different moment.
 
-ABSOLUTE RULES:
-1. IDENTITY: The face must be 100% the person from Images 1–${charCount}. Every feature — bone structure, skin tone, eyes, nose, lips, hair, any marks or asymmetries — preserved exactly. Zero blending with the pose reference person.
-2. BACKGROUND & SETTING: Must be identical to what appears in the character's photos. Same room, same environment, same lighting direction and color temperature. Do not use the pose reference background.
-3. WARDROBE: Identical clothing from the character's photos. Same garments, same colors, same fit.
-4. POSE & EXPRESSION ONLY: Adjust the body posture and head angle toward the geometry shown in Image ${charCount + 1}. Adjust the expression to convey: ${emotion} for a ${role} performance. Changes should feel natural — as if captured in the next frame of a photoshoot.
-5. PHOTOREALISM: Indistinguishable from a real photograph. Visible skin pores. Natural subsurface scattering. Authentic catchlights matching the character's environment. Individual hair strands. No smoothing. No CGI sheen. No artifacts.
+ABSOLUTE RULES FOR 100% FIDELITY:
+1. STRICT IDENTITY PRESERVATION: The face must be an EXACT, pixel-perfect match to the person from Images 1–${charCount}. Every feature — bone structure, skin tone, eyes, nose, lips, hair texture, any marks, and asymmetries — MUST be preserved exactly. ZERO blending or morphing with the pose reference person.
+2. EXACT BACKGROUND & SETTING: Must remain 100% identical to what appears in the character's photos. Same room depth, exact same environment objects, same lighting direction, and identical color temperature. Ignore the pose reference background completely.
+3. EXACT WARDROBE: Identical clothing from the character's photos. Exact same garments, textures, colors, and fit. NO creative changes to the attire.
+4. POSE & EXPRESSION ONLY: Subtly adjust the body posture and head angle toward the geometry shown in Image ${charCount + 1}. Adjust the expression to convey: ${emotion} for a ${role} performance. These changes must feel absolutely natural and grounded.
+5. ABSOLUTE HYPER-REALISM: The output must be indistinguishable from a real, unedited photograph taken by an elite portrait photographer. Visible skin pores, natural subsurface scattering, authentic catchlights matching the character's exact environment, and individual hair strands. Absolutely NO smoothing, NO CGI sheen, NO plastic look, and ZERO artifacts.
 
 OUTPUT: One single photorealistic photograph. Nothing else.
 `;
@@ -747,6 +734,8 @@ VEO CREATIVE DIRECTION PHILOSOPHY:
 ══════════════════════════════════════════════════════════════
 VEO responds to emotional truth, not checklists. One vivid note from a great director creates a performance. Twenty bullet points create a robot. Your task: synthesize everything below into a VEO prompt with FIVE sections — each delivering ONE dominant signal as flowing cinematic prose. No bullets within sections. No labeled sub-categories. Write like a director who communicates through feeling and image.
 
+Ensure World Class Prompt Engineering optimizing for absolute hyper-realism, Oscar-level acting (warmth, effortless charisma, relaxed facial muscles - strictly NO aggressive/tense descriptors), elite speech delivery, optimal pacing, smooth emotional transitions, and 100% consistent character vocal identity (Character Labeling with flawless US English accent).
+
 ══════════════════════════════════════════════════════════════
 IMAGES (study before writing):
 ══════════════════════════════════════════════════════════════
@@ -817,31 +806,31 @@ Character:
 
 Shot:
 
-[Open from Image 1: describe the framing, the camera-to-subject distance, where this person sits in the frame and how much space they command. Then describe how the camera behaves across the ${scene.duration_seconds} seconds: does it hold absolutely still, letting their stillness build authority? Does it make a barely perceptible push toward them as the key word arrives — closing distance by inches, not feet? Close on Image 2's framing. This camera has a perspective — it is not a recording device. It is moved by what it witnesses. Give it a point of view.]
+[Open from Image 1: describe the precise framing, camera-to-subject distance, and how the subject commands the space. ABSOLUTE RULE: The camera MUST remain completely still. ZERO camera movement. Locked-off frames only. Use a stationary, tripod-mounted perspective. High-status stillness is the priority. Close on Image 2's framing without any pan, tilt, or zoom.]
 
 ---
 
 Performance:
 
-[The scene is: "${sceneEssence}". Let that image govern every choice. Now synthesize the emotional core (${emotionalCore}), the physical signature (${physicalSig}), the expression, and the gesture into ONE unbroken performance direction. Write as if you are standing behind the camera whispering to this person thirty seconds before the take.
+[The scene is: "${sceneEssence}". Let that image govern every choice. Synthesize the emotional core (${emotionalCore}), physical signature (${physicalSig}), expression, and gesture into an elite, unbroken performance direction. Orchestrate this scene at the absolute highest level of cinematic realism.
 
-This presenter is ${personaSummary}. For this audience, the performance skill that matters most is high-status stillness punctuated by motivated movement — when they move, it carries meaning; when still, that stillness is the performance.
+This presenter is ${personaSummary}. For this audience, the performance skill that matters most is high-status stillness. When they do move, it is highly deliberate, motivated, and carries immense weight.
 
-The face: before the first word, the face already holds the full weight of what this scene is about to say. What is leaking through composure — the specific micro-expression of ${emotionalCore}. The eyes: ${referenceAnalysis.character?.acting_style?.eye_behavior || 'direct, warm, absolutely held — the ease of someone accustomed to consequential conversations'}. The body and hands: ${physicalSig} — describe exactly what triggers movement and where the body arrives. Every gesture is discovered, never performed. Every frame is a still worth pausing on — not because it is theatrical, but because this person is this present and this genuinely engaged.]
+The face: before the first word, the face already holds the full weight of the scene. What leaks through composure is the specific micro-expression of ${emotionalCore}. Enforce Oscar-level acting emphasizing intense realism, profound warmth, effortless charisma, and completely relaxed facial muscles. STRICTLY AVOID any aggressive, tense, or unnatural descriptors. The eyes: ${referenceAnalysis.character?.acting_style?.eye_behavior || 'direct, warm, absolutely held — piercing yet inviting, conveying the deep ease of someone accustomed to highly consequential conversations'}. The body and hands: ${physicalSig} — describe exactly what triggers the minimal movement and where the body arrives. Every gesture is discovered in the moment, never performed or rehearsed. Every single frame must be a highly engaging, dynamic, and convincing portrait of humanity. Ensure smooth, seamless emotional transitions from previous scenes to maximize viewer retention and trust. The result must be breathtakingly real.]
 
 ---
 
 Voice:
 
-[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. Natural Standard American English, warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer.
+[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. Apply a precise Character Label to ensure a 100% consistent character vocal identity (timbre and resonance with a flawless US English accent) across all scenes. Natural Standard American English, warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer.
+
+ENFORCE ABSOLUTE ELITE SPEECH DELIVERY: The performance must be breathtakingly natural, dynamic, and engaging. The pacing is moderately fast (140-150 WPM) but never rushed. Achieve a flawless, organic cadence where the breath controls the thought. Ensure rich, chest-driven resonance and absolute sonic clarity.
 
 ${pacingDirection}
 
-The emphasis words are ${emphasisWords}. On these words, the voice does not increase in volume — it becomes more precise. Consonants sharpen. Vowels fill completely. Then silence — long enough for the word to exist in the room before the next arrives. This is emphasis-through-precision, not volume. UHNWI listeners detect the difference immediately.
+The emphasis words are ${emphasisWords}. On these words, the voice does not increase in volume — it becomes more precise. Consonants sharpen. Vowels fill completely. The micro-pauses — ${pauseMap} — are profound, calculated decisions that land the impact perfectly. This is emphasis-through-precision, not volume. UHNWI listeners detect the difference immediately.
 
-Every sentence ends with a falling close. The voice drops at the period — authority never rises at sentence endings. Every statement is a fact placed on a table.
-
-The silences — ${pauseMap} — are decisions. The confident silence of someone who knows what they just said is worth sitting with. Articulation: every word arrives complete, forward-placed, clean word boundaries, nothing swallowed or blurred. ZERO music. ZERO audio effects. ZERO ambient sound. Voice only. Complete acoustic silence.]
+Every sentence ends with a falling close. The voice drops at the period — authority never rises at sentence endings. Every statement is a fact placed on a table with total conviction. Articulation: every word arrives complete, forward-placed, clean word boundaries, nothing swallowed or blurred. ZERO music. ZERO audio effects. ZERO ambient sound. Voice only. Complete acoustic silence.]
 
 ---
 
