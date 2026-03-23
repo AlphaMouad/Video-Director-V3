@@ -5,6 +5,8 @@ import {
   extractFrameFromVideo,
   engineerScenePrompt,
   generateCharacterFrame,
+  optimizePromptForVideoEngine,
+  generateSceneVideo,
   setApiKey
 } from './services/geminiService';
 import { AppState, EngineeredScene, ScriptScene } from './types';
@@ -43,6 +45,7 @@ export default function App() {
   const [isKeySet, setIsKeySet]       = useState(false);
   const [frameStatus, setFrameStatus] = useState<FrameStatus>('idle');
   const [frameEnhanced, setFrameEnhanced] = useState(false);
+  const [generationErrors, setGenerationErrors] = useState<{ images?: string, video?: string }>({});
   const [charDragOver, setCharDragOver]   = useState(false);
 
   const videoInputRef   = useRef<HTMLInputElement>(null);
@@ -157,24 +160,12 @@ export default function App() {
       return;
     }
 
-    // Step 2: AI character enhancement — completely optional, never blocks
-    setFrameStatus('enhancing');
-    let finalIn = inBlob, finalOut = outBlob, enhanced = false;
+    // We only set the extracted frames here for preview.
+    // We no longer pre-enhance images using the reference frame.
+    const inFile  = new File([inBlob],  `reference-inframe-${scene.scene_number}.jpg`,  { type: 'image/jpeg' });
+    const outFile = new File([outBlob], `reference-outframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
 
-    try {
-      const [rIn, rOut] = await Promise.all([
-        generateCharacterFrame(inBlob,  state.targetCharacterImages, scene.role, scene.emotional_tone),
-        generateCharacterFrame(outBlob, state.targetCharacterImages, scene.role, scene.emotional_tone)
-      ]);
-      finalIn  = rIn.blob;
-      finalOut = rOut.blob;
-      enhanced = rIn.enhanced || rOut.enhanced;
-    } catch { /* silent */ }
-
-    const inFile  = new File([finalIn],  `inframe-${scene.scene_number}.jpg`,  { type: 'image/jpeg' });
-    const outFile = new File([finalOut], `outframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
-
-    setFrameEnhanced(enhanced);
+    setFrameEnhanced(false);
     setFrameStatus('ready');
     setState(s => ({
       ...s,
@@ -187,24 +178,93 @@ export default function App() {
 
   const handleEngineerScene = async () => {
     if (state.selectedSceneIndex === null || !state.scriptSegmentation || !state.referenceAnalysis) return;
-    if (!state.inframeImage || !state.outframeImage) return;
     const scene = state.scriptSegmentation.scenes[state.selectedSceneIndex];
     try {
       setState(s => ({ ...s, sceneProcessing: 'engineering', sceneProcessingStatus: 'High thinking mode — crafting your elite VEO 3.1 prompt...', error: null }));
-      const prompt = await engineerScenePrompt(
+      setGenerationErrors({});
+
+      const rawPrompt = await engineerScenePrompt(
         scene, state.referenceAnalysis,
-        state.inframeImage, state.outframeImage,
         state.targetCharacterImages, state.completedScenes
       );
+
+      setState(s => ({ ...s, sceneProcessingStatus: 'Optimizing VEO 3.1 prompt into Google Internal Engine Format (strict Audio/Lip-Sync constraints)...' }));
+
+      const optimizedPrompt = await optimizePromptForVideoEngine(
+        rawPrompt,
+        scene.script_text
+      );
+
+      let finalInframe = state.inframeImage;
+      let finalOutframe = state.outframeImage;
+      let inBlob: Blob | null = null;
+      let outBlob: Blob | null = null;
+      let isEnhanced = false;
+
+      let imagesErrorStr = '';
+      if (state.targetCharacterImages.length > 0 && optimizedPrompt) {
+        setState(s => ({ ...s, sceneProcessingStatus: 'Generating Elite context frames (Imagen 3)...' }));
+        setFrameStatus('enhancing');
+        try {
+          const [rIn, rOut] = await Promise.all([
+            generateCharacterFrame(optimizedPrompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'in-frame'),
+            generateCharacterFrame(optimizedPrompt, state.targetCharacterImages, scene.role, scene.emotional_tone, 'out-frame')
+          ]);
+
+          if (rIn.blob) {
+            inBlob = rIn.blob;
+            finalInframe = new File([rIn.blob], `inframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
+            isEnhanced = isEnhanced || rIn.enhanced;
+          } else if (rIn.error) {
+             imagesErrorStr += `In-frame error: ${rIn.error}. `;
+          }
+
+          if (rOut.blob) {
+            outBlob = rOut.blob;
+            finalOutframe = new File([rOut.blob], `outframe-${scene.scene_number}.jpg`, { type: 'image/jpeg' });
+            isEnhanced = isEnhanced || rOut.enhanced;
+          } else if (rOut.error) {
+             imagesErrorStr += `Out-frame error: ${rOut.error}.`;
+          }
+        } catch (e: any) {
+          console.error("Frame generation failed", e);
+          imagesErrorStr = e.message || 'Unknown Frame Generation Error';
+        }
+      }
+
+      setState(s => ({ ...s, sceneProcessingStatus: 'Rendering VEO 3.1 Video (This may take several minutes)...' }));
+
+      const videoResult = await generateSceneVideo(optimizedPrompt, inBlob, outBlob);
+      let generated_video_url;
+      let videoErrorStr = videoResult.error;
+
+      if (videoResult.uri) {
+        generated_video_url = videoResult.uri;
+      } else if (videoResult.blob) {
+        generated_video_url = URL.createObjectURL(videoResult.blob);
+      }
+
+      if (imagesErrorStr || videoErrorStr) {
+         setGenerationErrors({ images: imagesErrorStr, video: videoErrorStr });
+      }
+
+      setFrameEnhanced(isEnhanced);
+      setFrameStatus('ready');
+
       const engineered: EngineeredScene = {
         scene_number: scene.scene_number, scene_title: scene.title,
         role: scene.role, duration_seconds: scene.duration_seconds,
-        veo_prompt: prompt, timestamp: new Date().toISOString(),
+        veo_prompt: optimizedPrompt, timestamp: new Date().toISOString(),
         inframe_source: state.useCustomInframe ? 'custom' : 'auto',
-        outframe_source: state.useCustomOutframe ? 'custom' : 'auto'
+        outframe_source: state.useCustomOutframe ? 'custom' : 'auto',
+        generated_video_url
       };
+
       setState(s => ({
-        ...s, sceneProcessing: 'complete', currentPrompt: prompt,
+        ...s,
+        inframeImage: finalInframe,
+        outframeImage: finalOutframe,
+        sceneProcessing: 'complete', currentPrompt: optimizedPrompt,
         completedScenes: [...s.completedScenes.filter(c => c.scene_number !== scene.scene_number), engineered]
       }));
     } catch (err) { handleError(err); }
@@ -752,7 +812,7 @@ export default function App() {
                         <div className="text-center space-y-3">
                           <h3 className="font-serif italic text-3xl text-white">Engineering Scene #{String(scene.scene_number).padStart(2, '0')}</h3>
                           <p className="text-gold/35 font-mono text-[10px] tracking-[0.25em] uppercase">{state.sceneProcessingStatus}</p>
-                          <p className="text-slate-800 text-[10px] font-mono mt-1">45–90 seconds — high thinking mode</p>
+                          <p className="text-slate-800 text-[10px] font-mono mt-1">Please keep this window open.</p>
                         </div>
                       </div>
                     )}
@@ -774,6 +834,33 @@ export default function App() {
                             </button>
                           </div>
                         </div>
+
+                        {(generationErrors.images || generationErrors.video) && (
+                          <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-6 mb-6">
+                            <h4 className="text-red-400 font-mono text-xs uppercase tracking-widest mb-3">Generation Errors</h4>
+                            {generationErrors.images && <p className="text-red-200 text-sm mb-2"><strong className="text-red-300">Images:</strong> {generationErrors.images}</p>}
+                            {generationErrors.video && <p className="text-red-200 text-sm"><strong className="text-red-300">Video (Veo):</strong> {generationErrors.video}</p>}
+                            <p className="text-slate-400 text-xs mt-3 italic">Note: If you lack whitelist access to `veo-2.0-generate-001` or `imagen-3.0-generate-001`, the API will return 404 or 403 errors. The text prompt was still successfully generated.</p>
+                          </div>
+                        )}
+
+                        {state.completedScenes.find(c => c.scene_number === scene.scene_number)?.generated_video_url && (
+                          <div className="bg-black/70 border border-gold/20 rounded-2xl p-8 shadow-2xl mb-6">
+                            <h4 className="text-gold font-serif italic text-lg mb-4 text-center">Generated VEO 3.1 Video</h4>
+                            <video
+                              src={state.completedScenes.find(c => c.scene_number === scene.scene_number)?.generated_video_url}
+                              controls
+                              className="w-full rounded-xl mb-4 border border-white/10"
+                            />
+                            <a
+                              href={state.completedScenes.find(c => c.scene_number === scene.scene_number)?.generated_video_url}
+                              download={`scene-${scene.scene_number}-veo.mp4`}
+                              className="block w-full text-center py-3 bg-gold hover:bg-yellow-500 text-black font-mono text-[10px] tracking-widest uppercase font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(202,138,4,0.2)]"
+                            >
+                              Download MP4
+                            </a>
+                          </div>
+                        )}
 
                         <div className="bg-black/70 border border-white/[0.05] rounded-2xl p-8 max-h-[560px] overflow-y-auto custom-scrollbar shadow-2xl relative">
                           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold/15 to-transparent" />

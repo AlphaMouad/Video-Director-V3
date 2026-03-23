@@ -5,7 +5,8 @@ import { ReferenceAnalysis, ScriptSegmentation, ScriptScene, EngineeredScene } f
 // MODEL REGISTRY
 // ============================================================
 const MODEL_TEXT_ELITE = 'gemini-3.1-pro-preview';    // Gemini 3.1 Pro
-const MODEL_IMAGE_GEN  = 'gemini-3-pro-image-preview'; // Nano Banana Pro
+const MODEL_IMAGE_GEN  = 'gemini-2.5-flash-image';    // Vision-capable image generation (Nano Banana Pro equivalent)
+const MODEL_VIDEO_GEN  = 'veo-3.1-generate-preview';  // Veo 3.1 Video Generation (v1beta API structure)
 
 // ============================================================
 // API Key management
@@ -33,9 +34,9 @@ export const analyzeReferenceVideo = async (videoFile: File): Promise<ReferenceA
   const base64Data = await fileToBase64(videoFile);
 
   const prompt = `
-You are a world-class Performance Analyst, Behavioral Scientist, and YouTube Presenter Intelligence Engine.
+You are a world-class Hollywood Director, Performance Analyst, Behavioral Scientist, and YouTube Presenter Intelligence Engine.
 
-This video will be used to extract the complete performance DNA of this presenter — the invisible architecture that makes them compelling, authoritative, and worth watching on YouTube. The output will power AI-generated video presentations targeting ultra-high-net-worth investors and family office principals.
+This video will be used to extract the complete performance DNA of this presenter — the invisible architecture that makes them compelling, authoritative, and worth watching on YouTube for High-Converting Video Sales Letters (VSLs) and pitching deals to wealthy investors. The output will power AI-generated video presentations targeting ultra-high-net-worth investors and family office principals, demanding World Class Acting, Speech Delivery, Pacing, and Acting Performance.
 
 Your analysis must go beyond what they DO. Understand WHY it works, and specifically WHY it works for a sophisticated, time-scarce, skepticism-high audience.
 
@@ -194,12 +195,12 @@ export const segmentScript = async (
   const MAX_SECONDS = 8.0;
 
   const prompt = `
-You are a world-class YouTube director, performance architect, and script editor.
-You are building an elite thought-leadership video for UHNWI investors — family office principals, private equity professionals, and sophisticated capital allocators.
+You are a world-class Hollywood Director, YouTube director, performance architect, and script editor.
+You are building an elite thought-leadership video, Video Sales Letter (VSL), and deal pitch for UHNWI investors — family office principals, private equity professionals, and sophisticated capital allocators.
 
 YOUR TWO JOBS:
-1. Generate a MASTER DIRECTING VISION for the full video (voice lock, energy arc, character through-line)
-2. Segment the script into precisely-timed VEO 3.1 scenes with elite acting blueprints
+1. Generate a MASTER DIRECTING VISION for the full video (voice lock, energy arc, character through-line). You must optimise every scene to absolute perfection having in mind the Full Video we're directing.
+2. Segment the script into precisely-timed VEO 3.1 scenes with elite acting blueprints, demanding World Class Acting, Speech Delivery, and Pacing.
 
 ═══════════════════════════════════════════════════
 PART 1 — MASTER DIRECTING VISION (generated once, governs all scenes)
@@ -211,9 +212,13 @@ VOICE FINGERPRINT: Derive a single locked voice description from the Presenter D
 
 ENERGY ARC MAP: Design the energy architecture of the full video. Where does energy peak? Where does it valley for intimacy or weight? Where are the re-engagement moments? Write this as a scene-by-scene map. e.g. "Scene 1: 8/10 (arrival) → Scene 2-3: 6/10 (generous depth) → Scene 4: 5/10 (intimacy valley) → Scene 5: 8/10 (insight spike) → Scene 6: 5/10 (measured close)"
 
+EMOTIONAL ARC MAP: Optimise The Emotional Arc to perfection. Design the emotional architecture of the full video to retain attention as much as possible and to be as persuasive as possible. Where does the viewer feel tension? Where do they feel relief? Where is the persuasive climax? Engineer Each Scene to perfection for this emotional journey.
+
 CHARACTER THROUGH-LINE: The one persona constant that never changes across any scene — the trait that makes this presenter recognizable and consistent. e.g. "The calm authority of someone who has made the mistakes so their viewer doesn't have to."
 
 VISUAL ANCHOR: Describe the locked visual world established in Scene 1. All subsequent scenes match this exactly — same background depth, same lighting signature, same color temperature, same framing language.
+
+FULL VIDEO CAMERA CHOREOGRAPHY: Orchestrate the camera movements perfectly across the full video script. MINIMAL CAMERA MOVEMENTS ARE REQUIRED. Default to high-status stillness. Move the camera ONLY when absolutely necessary for profound psychological impact (e.g., an imperceptible push-in on a critical insight). The directing must be world-class, prioritizing HYPER-REALISM and absolute best scene quality.
 
 PRESENTATION PERSONA: The specific UHNWI-appropriate archetype this presenter inhabits throughout. e.g. "The world-class private advisor who speaks to principals as peers — never performing, always genuine, treating every viewer's time as precious."
 
@@ -223,15 +228,15 @@ SILENCE RULE (ABSOLUTE, NON-NEGOTIABLE): Zero music. Zero audio effects. Zero am
 PART 2 — SCENE SEGMENTATION (sub-8 second hard limit)
 ═══════════════════════════════════════════════════
 
-THE UHNWI YOUTUBE VIEWER: Has seen every pitch. Detects inauthenticity in seconds. Stays for: peer-to-peer register, exclusive access to genuine thinking, intellectual generosity, and earned authority. Leaves immediately when: intelligence is underestimated, hype replaces evidence, or pacing wastes their time.
+THE UHNWI YOUTUBE VIEWER: Has seen every pitch. Detects inauthenticity in seconds. Stays for: peer-to-peer register, exclusive access to genuine thinking, intellectual generosity, and earned authority. Leaves immediately when: intelligence is underestimated, hype replaces evidence, or pacing wastes their time. Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible.
 
-RETENTION ARC (structure the full video around this):
-1. Hook (first 30s): Establish credibility + plant a specific curiosity only staying resolves
-2. Immediate payoff: First value hit within 60 seconds — prove the promise
-3. Deepening value: Viewer grows progressively richer per scene
-4. Re-engagement peaks: Pattern Interrupt or Perspective Shift every 60-90 seconds
-5. Cumulative authority: Each scene earns more trust than the last
-6. Generous close: Viewer leaves richer than they arrived — satisfied, not sold
+RETENTION ARC (structure the full video around this persuasive journey):
+1. Hook (first 30s): The Hook Must be optimised based on what a hook should be (a CTA to watch the video). Establish credibility + plant an undeniable specific curiosity only staying resolves.
+2. Immediate payoff: First value hit within 60 seconds — prove the promise to cement retention.
+3. Deepening value: Viewer grows progressively richer and more persuaded per scene.
+4. Re-engagement peaks: Pattern Interrupt or Perspective Shift every 60-90 seconds. Engineer these to re-hook attention absolutely.
+5. Cumulative authority: Each scene earns more trust than the last, building an unstoppable persuasive case.
+6. Generous close: Viewer leaves richer than they arrived, highly persuaded, and ready to act — satisfied, not sold.
 
 ═══════════════════════════════════════════════════
 TIMING ENFORCEMENT — THIS IS ABSOLUTE:
@@ -442,25 +447,20 @@ export const extractFrameFromVideo = (videoFile: File, timestamp: string): Promi
 
 // ============================================================
 // FUNCTION 3.5 — Generate Character Frame (Nano Banana Pro)
-//
-// Strategy: Character photos define EVERYTHING (identity, background,
-// setting, clothing, lighting). The reference frame informs pose/expression
-// geometry only — its environment and identity are ignored.
-// Silent fallback to character's own photo if model unavailable.
 // ============================================================
 export const generateCharacterFrame = async (
-  referenceFrame:        Blob,
+  scenePrompt:           string,
   targetCharacterImages: File[],
   role:                  string,
-  emotion:               string
-): Promise<{ blob: Blob; enhanced: boolean }> => {
+  emotion:               string,
+  frameType:             'in-frame' | 'out-frame'
+): Promise<{ blob: Blob | null; enhanced: boolean; error?: string }> => {
 
-  if (targetCharacterImages.length === 0) return { blob: referenceFrame, enhanced: false };
+  if (targetCharacterImages.length === 0) return { blob: null, enhanced: false, error: 'No character images provided' };
 
   const charBase64s = await Promise.all(
-    targetCharacterImages.slice(0, 5).map(img => fileToBase64(img))
+    targetCharacterImages.slice(0, 3).map(img => fileToBase64(img))
   );
-  const refBase64 = await fileToBase64(referenceFrame);
 
   const charCount = charBase64s.length;
   const charLabel = charCount === 1
@@ -468,65 +468,59 @@ export const generateCharacterFrame = async (
     : `Images 1 through ${charCount} are THE CHARACTER — ${charCount} photos of the same person. Cross-reference all of them for maximum identity, wardrobe, and environment accuracy.`;
 
   const prompt = `
-TASK: Pose and expression adjustment. Everything else stays identical.
+TASK: Generate an Elite, hyper-realistic ${frameType} photograph for a video scene.
 
 ${charLabel}
-Image ${charCount + 1} is the POSE REFERENCE — study only the body angle, head tilt, and expression intensity. The person and background in this image are completely irrelevant.
+The following is the Director's Scene Prompt detailing the emotional core, energy, and exact visual context of this scene:
+"""
+${scenePrompt}
+"""
 
 WHAT YOU ARE DOING:
-Take the person from Images 1–${charCount} and render them in a slightly adjusted pose and expression that fits the scene. Think of it as a photographer saying: "Good — now shift slightly and give me ${emotion}." Same person. Same place. Same clothes. Same light. Just a different moment.
+Take the person from the provided images and render them in a hyper-realistic photograph that perfectly captures the essence, pose, and expression required for the ${frameType} of this scene. The emotion is: "${emotion}" and the role is "${role}".
 
 ABSOLUTE RULES:
-1. IDENTITY: The face must be 100% the person from Images 1–${charCount}. Every feature — bone structure, skin tone, eyes, nose, lips, hair, any marks or asymmetries — preserved exactly. Zero blending with the pose reference person.
-2. BACKGROUND & SETTING: Must be identical to what appears in the character's photos. Same room, same environment, same lighting direction and color temperature. Do not use the pose reference background.
+1. IDENTITY: The face must be 100% the person from the images. Every feature — bone structure, skin tone, eyes, nose, lips, hair, any marks or asymmetries — preserved exactly.
+2. BACKGROUND & SETTING: Must be identical to what appears in the character's photos. Same room, same environment, same lighting direction and color temperature.
 3. WARDROBE: Identical clothing from the character's photos. Same garments, same colors, same fit.
-4. POSE & EXPRESSION ONLY: Adjust the body posture and head angle toward the geometry shown in Image ${charCount + 1}. Adjust the expression to convey: ${emotion} for a ${role} performance. Changes should feel natural — as if captured in the next frame of a photoshoot.
-5. PHOTOREALISM: Indistinguishable from a real photograph. Visible skin pores. Natural subsurface scattering. Authentic catchlights matching the character's environment. Individual hair strands. No smoothing. No CGI sheen. No artifacts.
+4. SCENE CONTEXT: The expression, posture, energy, and feeling must perfectly match the Director's Scene Prompt provided above. Optimize the image generation to perfection based on the scene context. Do not make the character look mad or angry; bring ease and magnetic charisma.
+5. HYPER-REALISM: Indistinguishable from a real cinematic photograph. Visible skin pores. Natural subsurface scattering. Authentic catchlights matching the character's environment. Individual hair strands.
+6. NEGATIVE PROMPT INSTRUCTIONS: No smoothing. No CGI sheen. No artifacts. No deformed limbs. No cartoonish features. No extra fingers. No aggressive or tense facial distortion.
 
-OUTPUT: One single photorealistic photograph. Nothing else.
+OUTPUT: One single hyper-realistic photograph. Nothing else.
 `;
 
   const parts: any[] = [
     ...charBase64s.map((b64, i) => ({
       inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
     })),
-    { inlineData: { data: refBase64, mimeType: 'image/jpeg' } },
     { text: prompt }
   ];
 
   const ai = getAI();
 
   try {
+    // Reverted to generateContent using gemini-2.5-flash-image to support passing reference images via parts
     const response = await ai.models.generateContent({
       model: MODEL_IMAGE_GEN,
       contents: [{ role: 'user', parts }],
-      config: { responseModalities: ['IMAGE', 'TEXT'] }
+      config: { responseModalities: ['IMAGE'] }
     });
 
-    const blob = extractImageFromResponse(response);
-    if (blob) return { blob, enhanced: true };
-  } catch {
-    // Nano Banana Pro unavailable — silent fallback
-  }
-
-  // Fallback: return first uploaded character photo
-  const fallbackB64 = await fileToBase64(targetCharacterImages[0]);
-  const bytes = atob(fallbackB64);
-  const arr   = new Uint8Array(bytes.length);
-  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-  return { blob: new Blob([arr], { type: targetCharacterImages[0].type || 'image/jpeg' }), enhanced: false };
-};
-
-const extractImageFromResponse = (response: any): Blob | null => {
-  for (const part of response.candidates?.[0]?.content?.parts || []) {
-    if (part.inlineData) {
-      const bytes = atob(part.inlineData.data);
-      const arr   = new Uint8Array(bytes.length);
-      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-      return new Blob([arr], { type: 'image/jpeg' });
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        const bytes = atob(part.inlineData.data);
+        const arr   = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        return { blob: new Blob([arr], { type: 'image/jpeg' }), enhanced: true };
+      }
     }
+  } catch (err: any) {
+    console.error('Image generation failed:', err);
+    return { blob: null, enhanced: false, error: err.message || 'Unknown API Error' };
   }
-  return null;
+
+  return { blob: null, enhanced: false, error: 'No image data in response' };
 };
 
 // ============================================================
@@ -535,14 +529,10 @@ const extractImageFromResponse = (response: any): Blob | null => {
 export const engineerScenePrompt = async (
   scene:                 ScriptScene,
   referenceAnalysis:     ReferenceAnalysis,
-  inframeImage:          File,
-  outframeImage:         File,
   targetCharacterImages: File[],
   completedScenes:       EngineeredScene[]
 ): Promise<string> => {
 
-  const inframeB64  = await fileToBase64(inframeImage);
-  const outframeB64 = await fileToBase64(outframeImage);
   const charBase64s = await Promise.all(
     targetCharacterImages.slice(0, 5).map(img => fileToBase64(img))
   );
@@ -550,8 +540,8 @@ export const engineerScenePrompt = async (
   const charCount      = charBase64s.length;
   const isAnchorScene  = completedScenes.length === 0;
   const charImageLabel = charCount === 1
-    ? 'Image 3 is the TARGET CHARACTER — the person who must appear in this video.'
-    : `Images 3 through ${charCount + 2} are the TARGET CHARACTER — ${charCount} photos of the same person for maximum identity accuracy.`;
+    ? 'Image 1 is the TARGET CHARACTER — the person who must appear in this video.'
+    : `Images 1 through ${charCount} are the TARGET CHARACTER — ${charCount} photos of the same person for maximum identity accuracy.`;
 
   // Voice fingerprint — derived from reference analysis DNA (locked for whole video)
   const voiceFingerprint = [
@@ -566,12 +556,12 @@ export const engineerScenePrompt = async (
   // Continuity context
   const continuity = isAnchorScene
     ? `ANCHOR SCENE — Scene 1 of ${completedScenes.length + 1}+. Every visual constant you define here is LOCKED for the entire video: skin rendering quality, lighting signature and direction, background depth and tones, color temperature, framing language. Describe each with the precision that lets every subsequent scene match it frame-perfectly.`
-    : `VISUAL CONTINUITY — match the established world with zero deviation.
+    : `VISUAL AND EMOTIONAL CONTINUITY — match the established world with zero deviation. Optimise The Emotions Between The Scenes to perfection. Ensure consistent character sound: the human voice must sound exactly like the same person (timbre, resonance) but allow emotional variance to match the scene's persuasive needs perfectly.
 
 LOCKED CONSTANTS from previous scenes (every physical detail is frozen):
 ${completedScenes.slice(-2).map(s => `Scene ${s.scene_number} — "${s.scene_title}":\n${s.veo_prompt.substring(0, 600)}...`).join('\n\n---\n\n')}
 
-Scene transition: ${scene.continuity?.enters_from || 'continues from previous scene energy'} → this scene. Exits to: ${scene.continuity?.exits_to || 'next scene'}.`;
+Scene transition: ${scene.continuity?.enters_from || 'continues from previous scene energy'} → this scene. Exits to: ${scene.continuity?.exits_to || 'next scene'}. Ensure the emotional transition between scenes engages the viewer completely and convinces them of the script's absolute truth.`;
 
   // ─────────────────────────────────────────────────────────────
   // Role Performance Map — YouTube Thought Leadership for UHNWI
@@ -706,9 +696,9 @@ Scene transition: ${scene.continuity?.enters_from || 'continues from previous sc
     pacing: `Conversational authority — natural rhythm with deliberate handling of emphasis words and pause points. Never rushed. Never performed.`,
   };
 
-  const energyDirection = roleData.energy;
-  const directorNote    = roleData.directorNote;
-  const pacingDirection = roleData.pacing;
+  const energyDirection = roleData.energy + "\n\nOSCAR-LEVEL ACTING PERFORMANCE REQUIRED: Optimise each scene to profound cinematic perfection having in Mind The Full Video we're directing. The Acting Performance must be World class! Inject hyper-detailed, warm, engaging micro-expressions. The character must NOT look angry or tense. Bring EASE to the viewer with relaxed authority and effortless charisma. Optimise The Emotional Arc to perfection, and Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Engineer Each Scene to magnetic perfection please. The Realism must be impeccable. You must stick strictly to the target frames provided.";
+  const directorNote    = roleData.directorNote + "\n\nWORLD-CLASS SCENE DIRECTING: Optimise this scene to absolute cinematic perfection. The Facial Expressions must convey profound depth (e.g., a warm, magnetic micro-smile, relaxed facial muscles, empathetic eye contact). DO NOT make the character look mad or calculating. Give EASE to the viewer and ensure an Elite Viewing Experience. Ensure the Directing is Optimised to Retain attention as much as possible and to be as persuasive as possible. Orchestrate the camera movements perfectly across the full video script context. Engineer Each Scene to perfection please. The Realism must be impeccable. You must stick strictly to the target frames provided.";
+  const pacingDirection = roleData.pacing + "\n\nELITE SPEECH DELIVERY AND PACING: The Speech Delivery and Pacing must be World class! Pacing must be flawless, optimizing the scene based on its specific purpose within the world-class video. Optimise The Emotional Arc to perfection to retain attention and maximize persuasive power. Ensure Consistent Character Sound (timbre, resonance) while allowing elite emotional variance. You MUST use a Native US English Accent without fail.";
 
   // Scene essence anchor — the north star for this prompt
   const sceneEssence    = scene.acting_blueprint.scene_essence    || `A ${scene.role} that makes the viewer feel ${scene.emotional_tone}`;
@@ -750,11 +740,9 @@ VEO responds to emotional truth, not checklists. One vivid note from a great dir
 ══════════════════════════════════════════════════════════════
 IMAGES (study before writing):
 ══════════════════════════════════════════════════════════════
-Image 1 — OPENING FRAME: Posing geometry, framing, environment at scene start.
-Image 2 — CLOSING FRAME: Posing geometry, expression shift, final framing.
 ${charImageLabel}
 
-IMAGE AUTHORITY: The TARGET CHARACTER images define EVERYTHING about who appears in this video — face, identity, wardrobe, environment, and lighting. They are absolute truth. Images 1 and 2 provide posing geometry and camera language only — never identity or setting.
+IMAGE AUTHORITY: The TARGET CHARACTER images define EVERYTHING about who appears in this video — face, identity, wardrobe, environment, and lighting. They are absolute truth. You MUST stick strictly to these character frames without hallucinating or altering the background, lighting, or wardrobe. Derive the opening and closing posture geometry entirely from the emotional core and energy arc of the scene, utilizing the character's natural baseline.
 
 ══════════════════════════════════════════════════════════════
 SCENE: #${scene.scene_number} — "${scene.title}"
@@ -817,7 +805,7 @@ Character:
 
 Shot:
 
-[Open from Image 1: describe the framing, the camera-to-subject distance, where this person sits in the frame and how much space they command. Then describe how the camera behaves across the ${scene.duration_seconds} seconds: does it hold absolutely still, letting their stillness build authority? Does it make a barely perceptible push toward them as the key word arrives — closing distance by inches, not feet? Close on Image 2's framing. This camera has a perspective — it is not a recording device. It is moved by what it witnesses. Give it a point of view.]
+[Describe the framing, the camera-to-subject distance, where this person sits in the frame and how much space they command at the start of the scene. Then describe how the camera behaves across the ${scene.duration_seconds} seconds: does it hold absolutely still, letting their stillness build authority? Does it make a barely perceptible push toward them as the key word arrives — closing distance by inches, not feet? Describe the final framing. This camera has a perspective — it is not a recording device. It is moved by what it witnesses. Give it a point of view.]
 
 ---
 
@@ -825,15 +813,15 @@ Performance:
 
 [The scene is: "${sceneEssence}". Let that image govern every choice. Now synthesize the emotional core (${emotionalCore}), the physical signature (${physicalSig}), the expression, and the gesture into ONE unbroken performance direction. Write as if you are standing behind the camera whispering to this person thirty seconds before the take.
 
-This presenter is ${personaSummary}. For this audience, the performance skill that matters most is high-status stillness punctuated by motivated movement — when they move, it carries meaning; when still, that stillness is the performance.
+This presenter is ${personaSummary}. For this audience, the performance skill that matters most is high-status stillness punctuated by motivated movement — when they move, it carries meaning; when still, that stillness is the performance. The acting must be of Elite Hollywood-caliber, generating undeniable magnetic pull.
 
-The face: before the first word, the face already holds the full weight of what this scene is about to say. What is leaking through composure — the specific micro-expression of ${emotionalCore}. The eyes: ${referenceAnalysis.character?.acting_style?.eye_behavior || 'direct, warm, absolutely held — the ease of someone accustomed to consequential conversations'}. The body and hands: ${physicalSig} — describe exactly what triggers movement and where the body arrives. Every gesture is discovered, never performed. Every frame is a still worth pausing on — not because it is theatrical, but because this person is this present and this genuinely engaged.]
+The face: before the first word, the face already holds the full weight of what this scene is about to say. What is leaking through composure — describe hyper-detailed micro-expressions of ${emotionalCore} (e.g., a subtle, warm micro-smile, relaxed jaw, empathetic brow movement, and inviting, reassuring eye contact). The character MUST NOT look angry, intense, or mad. Bring EASE to the viewer. The eyes: ${referenceAnalysis.character?.acting_style?.eye_behavior || 'direct, warm, absolutely held — the ease of someone accustomed to consequential conversations'}. The facial expressions must convey profound emotional depth, effortless charisma, and elite persuasion. The body and hands: ${physicalSig} — describe exactly what triggers movement and where the body arrives. Every gesture is discovered, never performed. Every frame is a still worth pausing on — not because it is theatrical, but because this person is this present and this genuinely engaged.]
 
 ---
 
 Voice:
 
-[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. Natural Standard American English, warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer.
+[${voiceFingerprint}. This is the voice's locked character — it does not change across any scene in this video. MUST BE AN AUTHENTIC NATIVE US ENGLISH ACCENT. This is absolute. Warm and educated, completely at ease. Not broadcast-polished. Not a sales voice. The private briefing register: a world-class advisor speaking to a principal as a peer.
 
 ${pacingDirection}
 
@@ -874,8 +862,6 @@ Write now. Five sections. Each one a single dominant signal, written as flowing 
 
   const parts: any[] = [
     { text: prompt },
-    { inlineData: { mimeType: inframeImage.type  || 'image/jpeg', data: inframeB64  } },
-    { inlineData: { mimeType: outframeImage.type || 'image/jpeg', data: outframeB64 } },
     ...charBase64s.map((b64, i) => ({
       inlineData: { data: b64, mimeType: targetCharacterImages[i].type || 'image/jpeg' }
     }))
@@ -886,6 +872,181 @@ Write now. Five sections. Each one a single dominant signal, written as flowing 
     model: MODEL_TEXT_ELITE,
     contents: [{ role: 'user', parts }],
     config: { thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH } }
+  });
+
+  return response.text || '';
+};
+
+// ============================================================
+// FUNCTION 6 — Generate VEO Video
+// ============================================================
+export const generateSceneVideo = async (
+  optimizedPrompt: string,
+  inframeBlob: Blob | null,
+  outframeBlob: Blob | null
+): Promise<{ blob: Blob | null; error?: string; uri?: string }> => {
+  if (!userApiKey) return { blob: null, error: 'API Key not set' };
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_VIDEO_GEN}:predictLongRunning?key=${userApiKey}`;
+
+    // Construct the Veo instance object. We use the generated inframe (or outframe) as the visual context base.
+    const instance: any = { prompt: optimizedPrompt };
+
+    if (inframeBlob) {
+      const inBase64 = await fileToBase64(new File([inframeBlob], 'in.jpg', { type: 'image/jpeg' }));
+      instance.image = { bytesBase64Encoded: inBase64, mimeType: 'image/jpeg' };
+    } else if (outframeBlob) {
+      const outBase64 = await fileToBase64(new File([outframeBlob], 'out.jpg', { type: 'image/jpeg' }));
+      instance.image = { bytesBase64Encoded: outBase64, mimeType: 'image/jpeg' };
+    }
+
+    const payload = {
+      instances: [instance],
+      parameters: {
+        aspectRatio: "16:9",
+        resolution: "1080p",
+        durationSeconds: 8,
+        sampleCount: 1
+      }
+    };
+
+    console.log("Initiating Veo Video Generation via predictLongRunning...");
+    const initialResponse = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const operationData = await initialResponse.json();
+
+    if (!initialResponse.ok) {
+       console.error("Veo Initialization Error:", operationData);
+       return { blob: null, error: operationData.error?.message || 'Failed to initiate Veo generation' };
+    }
+
+    const operationName = operationData.name;
+    if (!operationName) {
+       return { blob: null, error: 'No operation name returned from predictLongRunning API.' };
+    }
+
+    console.log(`Veo Operation created: ${operationName}. Polling for completion...`);
+
+    const pollUrl = `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${userApiKey}`;
+
+    let done = false;
+    let attempts = 0;
+
+    while (!done && attempts < 40) { // Poll for ~6.5 minutes (40 * 10 seconds)
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      console.log(`Polling Veo Operation ${operationName} (attempt ${attempts + 1})...`);
+
+      const pollResponse = await fetch(pollUrl);
+      const pollData = await pollResponse.json();
+
+      if (pollData.error) {
+         console.error("Veo Polling Error:", pollData);
+         return { blob: null, error: pollData.error.message || 'Error occurred during Veo polling.' };
+      }
+
+      if (pollData.done) {
+        if (pollData.response) {
+          // Extract the video URI
+          const videoUri = pollData.response.videoUri || pollData.response.video_uri;
+          if (videoUri) {
+             console.log("Veo Video successfully generated:", videoUri);
+             return { blob: null, uri: videoUri };
+          }
+
+          // Check for videoBytes fallback
+          if (pollData.response.video && pollData.response.video.videoBytes) {
+             const bytes = atob(pollData.response.video.videoBytes);
+             const arr = new Uint8Array(bytes.length);
+             for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+             return { blob: new Blob([arr], { type: 'video/mp4' }) };
+          }
+
+          return { blob: null, error: 'Operation completed, but no video URI was found in the response.' };
+        }
+        return { blob: null, error: 'Operation completed without a response object.' };
+      }
+
+      attempts++;
+    }
+
+    return { blob: null, error: 'Veo video generation timed out after 6 minutes.' };
+  } catch (err: any) {
+    console.error('Video generation fetch failed:', err);
+    return { blob: null, error: err.message || 'Unknown Network Error during Veo generation' };
+  }
+};
+
+// ============================================================
+// FUNCTION 5 — Core Backend Video AI Orchestrator
+// ============================================================
+export const optimizePromptForVideoEngine = async (
+  rawPrompt: string,
+  scriptText: string
+): Promise<string> => {
+  const prompt = `
+Objective: You are the Core Backend Video AI Orchestrator for the Veo 3.1 engine. Your singular goal is to synthesize the user's raw text into a structured, hyper-optimized prompt for the final video generation. You must format your output exactly like Google's internal generation engine to yield an ultra-premium Elite YouTube creator pitch video with flawless lip-sync, an isolated audio track, and hyper-realistic visual fidelity.
+
+CRITICAL DIRECTIVES FOR YOUR SYNTHESIZED VIDEO PROMPT:
+
+1. DISTILLATION & CATEGORIZATION: Do not write a massive paragraph of descriptive filler. The video engine requires highly distilled, concise, and machine-readable data. You must synthesize the user's inputs strictly into FIVE distinct headers: [Visuals], [Action & Performance], [Script], [Audio Style], and [Negative Prompts].
+
+2. PRECISE MICRO-CHOREOGRAPHY: The video model responds best to specific, isolated physical actions. To prevent AI limb-glitching and preserve rendering power for the face, strictly limit body movement. Embed this exact phrasing: "The subject maintains a confident, warm expression and performs a single precise hand gesture with an open palm to emphasize the core point, keeping the hand cleanly in the lower frame."
+
+3. EXPLICIT SCRIPT INJECTION (CRITICAL FOR LIP-SYNC): The physics engine natively locks its lip-sync and micro-expressions to quoted text. You MUST extract the exact spoken dialogue the user wants delivered and explicitly embed it into your final prompt using quotation marks. Ensure flawless lip-sync with absolutely zero mumbling.
+
+4. THE IRONCLAD AUDIO WALL: The model WILL hallucinate music unless constrained physically. Use the exact ALL CAPS block provided below for the [Audio Style] section.
+
+5. ABSOLUTE FORMATTING RULE: You must return ONLY the raw text for the FIVE bracketed sections. NO markdown code blocks. NO preamble. NO postamble. Output the synthesized text immediately.
+
+6. ELITE ACTING, WARMTH & HYPER-REALISM: The acting must radiate sovereign certainty but MUST remain exceptionally WARM, INVITING, and REASSURING (bringing EASE to the viewer). The presenter is pitching multi-million dollar deals to UHNWI investors. Inject profound emotional depth via hyper-detailed, relaxed micro-expressions (e.g., magnetic micro-smile, empathetic eye contact). DO NOT make the character look mad or angry. The visuals MUST be Hyper-Realistic (visible skin pores, authentic subsurface scattering).
+
+7. EXPLICIT NEGATIVE PROMPTING: You must include a [Negative Prompts] section to explicitly ban all bad artifacts, erratic movements, angry facial expressions, bad lip-sync, and hallucinated audio.
+
+Output Format Requirements:
+Synthesize the final prompt EXACTLY in this format (do not use bullet points, just the exact bracketed headers followed by the distilled text):
+
+[Visuals]
+Cinematic, ultra-premium UHNWI briefing room aesthetic. High-end dark textured background with subtle vertical LED accent lighting. Shot on 85mm lens with shallow depth of field (f/1.4). MINIMAL CAMERA MOVEMENTS: The directing is world class. Default to a locked-off, high-authority frame. Move the camera ONLY when absolutely necessary for profound psychological impact (e.g., an imperceptible, slow push-in on a critical value point). HYPER-REALISM IS PARAMOUNT: The image must be indistinguishable from a top-tier cinematic photograph. Authentic skin textures, highly photorealistic sub-surface scattering, visible skin pores, and specular catchlights in the corneas. Ensure absolute best scene quality.
+
+[Action & Performance]
+High-converting elite VSL presenter performance optimized for an Elite Viewing Experience, maximum psychological retention, and absolute persuasive power. The performance radiates relaxed sovereign certainty, effortless charisma, and peer-level respect for wealthy investors. OSCAR-LEVEL ACTING PERFORMANCE: profound emotional depth conveyed through highly engaging, warm micro-expressions (e.g., a reassuring micro-smile, relaxed jaw, and inviting, empathetic eye contact). The character brings total ease to the viewer and never looks angry or tense. HIGH-STATUS STILLNESS: The subject commands the room through stillness, making deliberate, minimal movements only when necessary. ELITE SPEECH DELIVERY: The delivery is masterful and compelling. Confident, warm expression paired with a single precise, welcoming hand gesture (e.g., an open palm of generosity) to emphasize the core point. Calculated conversational pacing utilizing intentional micro-pauses for pattern interruption and tension building. Unwavering, reassuring direct-to-lens eye contact. The actor is utterly convinced of their own script.
+
+[Script]
+Frame-accurate phonetic lip-sync mapping mapped to a strict 145-155 WPM (Words Per Minute) VSL cadence. The subject confidently speaks the following explicit line directly to the camera: "[INSERT THE EXACT SPOKEN SCRIPT/DIALOGUE FROM THE USER INPUT HERE]". Flawless physical articulation of bilabial plosives and labiodental fricatives, stretching the vowels on impact words for dramatic emphasis.
+
+[Audio Style]
+AUTHORITATIVE, HIGH-RETENTION VSL VOCAL DELIVERY. AUTHENTIC NATIVE US ENGLISH ACCENT. PRECISE 150 WPM CADENCE. DYNAMIC PITCH VARIATION WITH HARD EMPHASIS ON CORE VALUE PROPOSITIONS AND STRATEGIC 1.5-SECOND SILENT BEATS BEFORE KEY HOOKS. COMPLETELY DEAD ACOUSTIC ROOM. STUDIO-ISOLATED DRY VOCAL RECORDING. STRICT NEGATIVE AUDIO OVERRIDE: ABSOLUTELY NO BACKGROUND MUSIC. NO YOUTUBE INTRO MUSIC. NO CINEMATIC SCORE. NO CORPORATE TRACKS. NO AMBIENT NOISE. NO SOUND EFFECTS. NO FOLEY. THE BACKGROUND MUST BE 100% DEAD SILENT. GENERATE ONLY THE CRISP, ISOLATED HUMAN VOICE DELIVERING THE EXACT SCRIPT PROVIDED.
+
+[Negative Prompts]
+CGI sheen, smoothed skin, plastic appearance, morphed limbs, extra fingers, erratic camera shaking, fast panning, hallucinated background music, Foley sound effects, ambient noise, mumbling, slurring words, out-of-sync lip movements, tense jaw, angry expression, mad look, intense aggressive staring, floating objects, background morphing, low resolution.
+
+Execution Logic:
+1. Synthesize the user's text and ingredients into the FIVE exact bracketed sections above. Fill in the [INSERT...] placeholder with the actual exact dialogue.
+2. Elevate the persuasive punch of the performance directions to match an elite UHNWI deal pitch while guaranteeing absolute viewer EASE and WARMTH.
+3. OUTPUT ONLY THE FIVE SECTIONS. NO OTHER TEXT.
+
+User Input / Context:
+Raw Director's Prompt Blueprint:
+"""
+${rawPrompt}
+"""
+
+User Script (Inject into [Script]):
+"""
+${scriptText}
+"""
+`;
+
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: MODEL_TEXT_ELITE,
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    // Removed thinkingConfig to ensure fast and reliable formatting without backend 500 errors
   });
 
   return response.text || '';

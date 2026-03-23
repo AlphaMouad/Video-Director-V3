@@ -193,6 +193,8 @@ export interface EngineeredScene {
   // V3 additions
   inframe_source: 'auto' | 'custom';   // Whether user kept auto-selected or uploaded custom
   outframe_source: 'auto' | 'custom';
+  // V4 additions
+  generated_video_url?: string;        // Local object URL for the generated VEO video
 }
 
 // ============================================================
